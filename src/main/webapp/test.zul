@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:h="http://www.zkoss.org/2005/zk/native"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd"
+>
+    <window width="100%" height="50%" title="Список задач">
+        <listbox>
+            <listhead>
+                <listheader label="Задача"/>
+                <listheader label="Магазин"/>
+                <listheader label="Заполнено"/>
+                <listheader label="Сумма"/>
+            </listhead>
+            <listitem style="background-color:yellow">
+                <listcell>
+                    <a href="http://wrike.com/open.html?id=165186589"> АшанМожайскоеINC1240339 Store visit</a>
+                </listcell>
+                <listcell>
+                    /АшанМожайское/АшанМожайское_BCS/
+                </listcell>
+                <listcell>
+                    <button label="Заполнить"/>
+                </listcell>
+                <listcell/>
+            </listitem>
+            <listitem>
+                <listcell>
+                    <a href="http://wrike.com/open.html?id=165186589"> АшанМожайскоеINC1240339 Store visit</a>
+                </listcell>
+                <listcell>
+                    /АшанМожайское/АшанМожайское_BCS/
+                </listcell>
+                <listcell>
+                    <button label="Редактировать"/>
+                </listcell>
+                <listcell>7100 руб</listcell>
+            </listitem>
+            <listitem>
+                <listcell>
+                    <a href="http://wrike.com/open.html?id=165186589">
+                        Говорово BCS INC1302843 Свет
+                    </a>
+                </listcell>
+                <listcell>
+                    /Говорово/москва Говорово BCS/
+                </listcell>
+                <listcell>
+                    <button label="Редактировать"/>
+                </listcell>
+                <listcell>3100 руб</listcell>
+            </listitem>
+        </listbox>
+        <button label="Отчёт (Excel или Pdf)"/>
+    </window>
+
+    <window title="Редактирование задачи">
+        <hbox>
+            <listbox>
+                <listhead>
+                    <listheader label="Работа"/>
+                    <listheader label="Ед. изм."/>
+                    <listheader label="Кол-во"/>
+                    <listheader label="Цена за ед"/>
+                    <listheader label="Сумма"/>
+                </listhead>
+                <listitem>
+                    <listcell label="Замена замка мебельного"/>
+                    <listcell label="шт"/>
+                    <listcell label="3"/>
+                    <listcell label="150"/>
+                    <listcell label="450"/>
+                </listitem>
+            </listbox>
+            <space/>
+            <listbox>
+                <listhead>
+                    <listheader label="Материал"/>
+                    <listheader label="Ед. изм."/>
+                    <listheader label="Кол-во"/>
+                    <listheader label="Цена за ед"/>
+                    <listheader label="Сумма"/>
+                </listhead>
+                <listitem>
+                    <listcell label="Замки ML-30 PALLADIUM"/>
+                    <listcell label="шт"/>
+                    <listcell label="1"/>
+                    <listcell label=""/>
+                    <listcell label="196,63"/>
+                </listitem>
+            </listbox>
+        </hbox>
+        <button label="Добавить из шаблона"/>
+        <button label="Сохранить как шаблон"/>
+        <space/>
+        <button label="Сохранить и закрыть"/>
+    </window>
+
+</zk>
