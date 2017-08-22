@@ -1,4 +1,4 @@
-package ru.simplex_software.security;
+package ru.simplex_software.smeta.security;
 
 import org.springframework.transaction.annotation.Transactional;
 

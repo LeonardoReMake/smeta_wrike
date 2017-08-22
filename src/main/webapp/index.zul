@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd"
+>
+    <label value="It is start page" />
+</zk>
