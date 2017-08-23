@@ -23,15 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MyUserInfoTokenServices implements ResourceServerTokenServices {
-    private final static Log logger = LogFactory.getLog(MyUserInfoTokenServices.class);
+public class UserInfoTokenServices implements ResourceServerTokenServices {
+    private final static Log logger = LogFactory.getLog(UserInfoTokenServices.class);
 
     private final String userInfoEndpointUrl;
     private final String clientId;
     private OAuth2RestOperations restTemplate;
     private String tokenType = "Bearer";
 
-    public MyUserInfoTokenServices(String userInfoEndpointUrl, String clientId) {
+    public UserInfoTokenServices(String userInfoEndpointUrl, String clientId) {
         this.userInfoEndpointUrl = userInfoEndpointUrl;
         this.clientId = clientId;
     }

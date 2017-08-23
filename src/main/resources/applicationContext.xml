@@ -77,7 +77,7 @@
         <constructor-arg name="context" ref="oauth2ClientContext"/>
     </bean>
 
-    <bean id="tokenServices" class="ru.simplex_software.smeta.security.MyUserInfoTokenServices">
+    <bean id="tokenServices" class="ru.simplex_software.smeta.security.UserInfoTokenServices">
         <constructor-arg name="clientId" value="${oauth.clientId}"/>
         <constructor-arg name="userInfoEndpointUrl" value="${oauth.userInfoUri}"/>
         <property name="restTemplate" ref="restTemplate" />
