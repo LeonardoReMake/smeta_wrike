@@ -14,8 +14,16 @@
   </context-param>
 
   <listener>
+    <listener-class>
+      org.springframework.web.context.request.RequestContextListener
+    </listener-class>
+  </listener>
+
+  <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
+
+
 
   <filter>
     <filter-name>transactionFilter</filter-name>
@@ -27,6 +35,22 @@
   </filter>
   <filter-mapping>
     <filter-name>transactionFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- Spring OAuth Filter. In the case of needing to authenticate
+   during a request it manages the redirection to and from the OAuth authentication uri.
+   -->
+  <filter>
+    <filter-name>oauth2ClientContextFilter</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    <init-param>
+      <param-name>targetBeanName</param-name>
+      <param-value>oauth2ClientContextFilter</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>oauth2ClientContextFilter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 

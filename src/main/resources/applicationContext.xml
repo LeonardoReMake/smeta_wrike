@@ -2,9 +2,22 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
+       xmlns:dao="http://autodao.sourceforge.net/schemas/autodao-0.12"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+
+       xsi:schemaLocation=
+               "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                http://autodao.sourceforge.net/schemas/autodao-0.12 http://autodao.sourceforge.net/schemas/autodao-0.12.xsd
+                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+                http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2.xsd">
 
     <context:component-scan base-package="ru.simplex_software.smeta" />
+    <dao:hibernateScan base-package="ru.simplex_software.smeta.dao" />
+    <dao:hibernate interface="ru.simplex_software.smeta.dao.TaskDAO" id="taskDAO" />
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 
     <bean id="transactionFilter" class="ru.simplex_software.smeta.security.TransactionFilter" />
 
@@ -13,6 +26,7 @@
             <list>
                 <value>classpath:datasource.properties</value>
                 <value>classpath:hibernate.properties</value>
+                <value>classpath:oauth.properties</value>
             </list>
         </property>
     </bean>
@@ -45,6 +59,38 @@
         </property>
     </bean>
 
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 
+    <oauth:resource id="wrike" type="authorization_code"
+                    client-id="${oauth.clientId}"
+                    access-token-uri="${oauth.accessTokenUri}"
+                    client-secret="${oauth.clientSecret}"
+                    user-authorization-uri="${oauth.userAuthorizationUri}"
+                    token-name="${oauth.tokenName}"
+                    authentication-scheme="query"
+                    client-authentication-scheme="${oauth.clientAuthenticationScheme}" />
 
+    <bean id="restTemplate" class="org.springframework.security.oauth2.client.OAuth2RestTemplate">
+        <constructor-arg name="resource" ref="wrike"/>
+        <constructor-arg name="context" ref="oauth2ClientContext"/>
+    </bean>
+
+    <bean id="tokenServices" class="ru.simplex_software.smeta.security.MyUserInfoTokenServices">
+        <constructor-arg name="clientId" value="${oauth.clientId}"/>
+        <constructor-arg name="userInfoEndpointUrl" value="${oauth.userInfoUri}"/>
+        <property name="restTemplate" ref="restTemplate" />
+    </bean>
+
+    <bean id="oAuth2ClientAuthenticationProcessingFilter"
+          class="org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter">
+        <constructor-arg value="/login"/>
+        <property name="restTemplate" ref="restTemplate" />
+        <property name="tokenServices" ref="tokenServices" />
+    </bean>
+
+    <bean id="wrikeTaskDAO" class="ru.simplex_software.smeta.dao.WrikeTaskDaoImpl" />
+
+    <bean id="wrikeTasksLoader" class="ru.simplex_software.smeta.WrikeTasksLoaderService" />
 </beans>

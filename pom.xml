@@ -21,6 +21,7 @@
     <slf4j.version>1.7.25</slf4j.version>
     <hibernate.version>5.2.10.Final</hibernate.version>
     <postgresql.version>42.1.4</postgresql.version>
+    <jackson.version>2.9.0</jackson.version>
   </properties>
 
   <dependencies>
@@ -135,6 +136,26 @@
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-config</artifactId>
       <version>${springsecurity.version}</version>
+    </dependency>
+
+    <!-- for OAuth 2.0 -->
+    <dependency>
+      <groupId>org.springframework.security.oauth</groupId>
+      <artifactId>spring-security-oauth2</artifactId>
+      <version>2.2.0.RELEASE</version>
+    </dependency>
+
+    <!-- JSON Parser -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
 
     <!--ZK Framework-->
@@ -279,7 +300,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
 
