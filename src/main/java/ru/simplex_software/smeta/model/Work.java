@@ -26,6 +26,8 @@ public class Work extends LongIdPersistentEntity {
     /** Сумма. **/
     private Double amount;
 
+    private boolean editingStatus = true;
+
     @ManyToOne
     private Task task;
 
@@ -100,4 +102,11 @@ public class Work extends LongIdPersistentEntity {
                 '}';
     }
 
+    public boolean isEditingStatus() {
+        return editingStatus;
+    }
+
+    public void setEditingStatus(boolean editingStatus) {
+        this.editingStatus = editingStatus;
+    }
 }

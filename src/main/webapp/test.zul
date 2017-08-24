@@ -12,7 +12,7 @@
                 <listheader label="Сумма"/>
             </listhead>
             <template name="model">
-                <listitem style="background-color:yellow" onClick="@command(taskVM.getWorks(each))">
+                <listitem style="background-color:yellow">
                     <listcell>
                         <a href="http://wrike.com/open.html?id=165186589">
                             <label value="@bind(each.name)" />
@@ -22,41 +22,13 @@
                         <label value="@bind(each.shopName)"/>
                     </listcell>
                     <listcell>
-                        <button label="@load(taskVM.getButtonLabel(each))"/>
+                        <button label="@load(taskVM.getButtonLabel(each))" onClick="@command(taskVM.getWorks(each))"/>
                     </listcell>
                     <listcell>
                         <label value="@bind(each.amount)"/>
                     </listcell>
                 </listitem>
             </template>
-
-
-            <!--<listitem>-->
-                <!--<listcell>-->
-                    <!--<a href="http://wrike.com/open.html?id=165186589"> АшанМожайскоеINC1240339 Store visit</a>-->
-                <!--</listcell>-->
-                <!--<listcell>-->
-                    <!--/АшанМожайское/АшанМожайское_BCS/-->
-                <!--</listcell>-->
-                <!--<listcell>-->
-                    <!--<button label="Редактировать"/>-->
-                <!--</listcell>-->
-                <!--<listcell>7100 руб</listcell>-->
-            <!--</listitem>-->
-            <!--<listitem>-->
-                <!--<listcell>-->
-                    <!--<a href="http://wrike.com/open.html?id=165186589">-->
-                        <!--Говорово BCS INC1302843 Свет-->
-                    <!--</a>-->
-                <!--</listcell>-->
-                <!--<listcell>-->
-                    <!--/Говорово/москва Говорово BCS/-->
-                <!--</listcell>-->
-                <!--<listcell>-->
-                    <!--<button label="Редактировать"/>-->
-                <!--</listcell>-->
-                <!--<listcell>3100 руб</listcell>-->
-            <!--</listitem>-->
         </listbox>
         <button label="Отчёт (Excel или Pdf)"/>
     </window>

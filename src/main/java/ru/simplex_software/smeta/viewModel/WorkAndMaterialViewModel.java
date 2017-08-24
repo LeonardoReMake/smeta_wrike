@@ -3,7 +3,9 @@ package ru.simplex_software.smeta.viewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.AfterCompose;
+import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.ExecutionArgParam;
+import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zul.ListModelList;
@@ -30,7 +32,7 @@ public class WorkAndMaterialViewModel {
 
     private ListModelList<Material> materialListModel;
 
-    private boolean displayEdit = false;
+    private boolean addWork;
 
     public long getTotalSize(Task task) {
         return workDAO.getAllWorksCount(task);
@@ -52,23 +54,32 @@ public class WorkAndMaterialViewModel {
         this.workListModel = workListModel;
     }
 
-    public boolean isDisplayEdit() {
-        return displayEdit;
+    public boolean isAddWork() {
+        return addWork;
     }
 
-    public void setDisplayEdit(boolean displayEdit) {
-        this.displayEdit = displayEdit;
+    public void setAddWork(boolean addWork) {
+        this.addWork = addWork;
     }
 
     @AfterCompose
     public void init(@ExecutionArgParam("task") Task task) {
-
         List<Work> workList = workDAO.findByWorks(task);
         workListModel = new ListModelList<>(workList);
 
         List<Material> materialList = materialDAO.findByMaterials(task);
         materialListModel = new ListModelList<>(materialList);
-
     }
+
+    @Command
+    @NotifyChange("addWork")
+    public void onChangeVisibilityAddWork() {
+        if (addWork) {
+            addWork = false;
+        } else {
+            addWork = true;
+        }
+    }
+
 
 }

@@ -26,11 +26,9 @@ public class TaskViewModel {
     private TaskDAO taskDAO;
 
     @WireVariable
-    WrikeLoaderService wrikeLoaderService;
+    private WrikeLoaderService wrikeLoaderService;
 
     private ListModelList<Task> taskListModel;
-
-    private Task selectedTask;
 
     public ListModelList<Task> getTaskListModel() {
         return taskListModel;
