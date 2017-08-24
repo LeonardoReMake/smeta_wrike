@@ -3,17 +3,22 @@ package ru.simplex_software.smeta.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Task extends LongIdPersistentEntity{
+public class Task extends LongIdPersistentEntity {
+
+    private static Logger LOG = LoggerFactory.getLogger(Task.class);
 
     /** id, которое дает wrike каждой задаче. **/
     @NotNull
@@ -33,8 +38,12 @@ public class Task extends LongIdPersistentEntity{
     private boolean isFilled = false;
 
     /** Работы, которые надо выполнить по этой задаче. **/
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "task")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "task")
     private List<Work> works;
+
+    /** Материалы, которые надо выполнить по этой задаче. **/
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "material")
+    private List<Material> materials;
 
     /** Дата создания задачи. **/
     private LocalDate creationDate;
@@ -45,9 +54,24 @@ public class Task extends LongIdPersistentEntity{
     /** Номер заявки. Например: INC1343892. **/
     private String orderNumber;
 
-    @Override
-    public String toString() {
-        return "db_id: "+getId()+" name: "+name+" shopName: "+shopName+" city: "+city+" orderNumber: "+orderNumber;
+    public Task(String wrikeId, String name, String shopName, Double amount, boolean isFilled) {
+        this.wrikeId = wrikeId;
+        this.name = name;
+        this.shopName = shopName;
+        this.amount = amount;
+        this.isFilled = isFilled;
+    }
+
+    public Task() {
+
+    }
+
+    public boolean isFilled() {
+        return isFilled;
+    }
+
+    public void setFilled(boolean filled) {
+        this.isFilled = filled;
     }
 
     public String getWrikeId() {
@@ -84,14 +108,6 @@ public class Task extends LongIdPersistentEntity{
         this.amount = amount;
     }
 
-    public boolean isFilled() {
-        return isFilled;
-    }
-
-    public void setFilled(boolean filled) {
-        isFilled = filled;
-    }
-
     public List<Work> getWorks() {
         return works;
     }
@@ -122,5 +138,28 @@ public class Task extends LongIdPersistentEntity{
 
     public void setOrderNumber(String orderNumber) {
         this.orderNumber = orderNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "wrikeId='" + wrikeId + '\'' +
+                ", name='" + name + '\'' +
+                ", shopName='" + shopName + '\'' +
+                ", amount=" + amount +
+                ", isFilled=" + isFilled +
+                ", works=" + works +
+                ", creationDate=" + creationDate +
+                ", city='" + city + '\'' +
+                ", orderNumber='" + orderNumber + '\'' +
+                '}';
+    }
+
+    public List<Material> getMaterials() {
+        return materials;
+    }
+
+    public void setMaterials(List<Material> materials) {
+        this.materials = materials;
     }
 }

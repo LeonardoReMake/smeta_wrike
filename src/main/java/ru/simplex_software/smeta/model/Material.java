@@ -1,5 +1,7 @@
 package ru.simplex_software.smeta.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.Entity;
@@ -8,6 +10,9 @@ import javax.persistence.ManyToOne;
 @Entity
 public class Material extends LongIdPersistentEntity {
 
+    private static Logger LOG = LoggerFactory.getLogger(Material.class);
+
+    /** Название. **/
     private String name;
 
     /** Единицы измерения. **/
@@ -23,7 +28,16 @@ public class Material extends LongIdPersistentEntity {
     private Double amount;
 
     @ManyToOne
-    private Work work;
+    private Task task;
+
+    public Material(String name, String units, Double quantity, Double unitPrice, Double amount, Task task) {
+        this.name = name;
+        this.units = units;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+        this.amount = amount;
+        this.task = task;
+    }
 
     public String getName() {
         return name;
@@ -65,11 +79,24 @@ public class Material extends LongIdPersistentEntity {
         this.amount = amount;
     }
 
-    public Work getWork() {
-        return work;
+    public Task getTask() {
+        return task;
     }
 
-    public void setWork(Work work) {
-        this.work = work;
+    public void setTask(Task task) {
+        this.task = task;
     }
+
+    @Override
+    public String toString() {
+        return "Material{" +
+                "name='" + name + '\'' +
+                ", units='" + units + '\'' +
+                ", quantity=" + quantity +
+                ", unitPrice=" + unitPrice +
+                ", amount=" + amount +
+                ", task=" + task +
+                '}';
+    }
+
 }

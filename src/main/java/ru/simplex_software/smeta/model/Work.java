@@ -1,15 +1,16 @@
 package ru.simplex_software.smeta.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import java.util.List;
 
 @Entity
 public class Work extends LongIdPersistentEntity {
+
+    private static Logger LOG = LoggerFactory.getLogger(Task.class);
 
     private String name;
 
@@ -25,11 +26,19 @@ public class Work extends LongIdPersistentEntity {
     /** Сумма. **/
     private Double amount;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "work")
-    private List<Material> materials;
-
     @ManyToOne
     private Task task;
+
+    public Work(String name, String units, Double quantity, Double unitPrice, Double amount, Task task) {
+        this.name = name;
+        this.units = units;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+        this.amount = amount;
+        this.task = task;
+    }
+
+    public Work() {}
 
     public String getName() {
         return name;
@@ -71,19 +80,24 @@ public class Work extends LongIdPersistentEntity {
         this.amount = amount;
     }
 
-    public List<Material> getMaterials() {
-        return materials;
-    }
-
-    public void setMaterials(List<Material> materials) {
-        this.materials = materials;
-    }
-
-    public Task getTask() {
+    public ru.simplex_software.smeta.model.Task getTask() {
         return task;
     }
 
-    public void setTask(Task task) {
+    public void setTask(ru.simplex_software.smeta.model.Task task) {
         this.task = task;
     }
+
+    @Override
+    public String toString() {
+        return "Work{" +
+                "name='" + name + '\'' +
+                ", units='" + units + '\'' +
+                ", quantity=" + quantity +
+                ", unitPrice=" + unitPrice +
+                ", amount=" + amount +
+                ", task=" + task +
+                '}';
+    }
+
 }
