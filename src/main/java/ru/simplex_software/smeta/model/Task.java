@@ -38,11 +38,11 @@ public class Task extends LongIdPersistentEntity {
     private boolean isFilled = false;
 
     /** Работы, которые надо выполнить по этой задаче. **/
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "task")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "task")
     private List<Work> works;
 
     /** Материалы, которые надо выполнить по этой задаче. **/
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "material")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "task")
     private List<Material> materials;
 
     /** Дата создания задачи. **/
