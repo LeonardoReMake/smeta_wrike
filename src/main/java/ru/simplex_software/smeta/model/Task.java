@@ -62,9 +62,7 @@ public class Task extends LongIdPersistentEntity {
         this.isFilled = isFilled;
     }
 
-    public Task() {
-
-    }
+    public Task() {}
 
     public boolean isFilled() {
         return isFilled;

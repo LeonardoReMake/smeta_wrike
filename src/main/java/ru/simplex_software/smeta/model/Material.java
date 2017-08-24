@@ -39,6 +39,8 @@ public class Material extends LongIdPersistentEntity {
         this.task = task;
     }
 
+    public Material() {}
+
     public String getName() {
         return name;
     }

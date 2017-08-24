@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
+    <window id="wmWindow" title="Редактирование задачи" mode="modal" closable="true" width="95%"
+            viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')">
+        <hbox>
+            <grid model="@bind(wmVM.workListModel))" width="100%" mold="paging" pageSize="10">
+                <columns>
+                    <column hflex="10" label="Работа" align="left"></column>
+                    <column hflex="3" label="Ед. изм." align="center"></column>
+                    <column hflex="3" label="Кол-во" align="center"></column>
+                    <column hflex="3" label="Цена за ед" align="center"></column>
+                    <column hflex="3" label="Сумма" align="center"></column>
+                </columns>
+                <template name="model">
+                    <row>
+                        <textbox inplace="true" value="@bind(each.name)"/>
+                        <textbox inplace="true" value="@bind(each.units)"/>
+                        <textbox inplace="true" value="@bind(each.quantity)"/>
+                        <textbox inplace="true" value="@bind(each.unitPrice)"/>
+                        <textbox inplace="true" value="@bind(each.amount)"/>
+                    </row>
+                </template>
+            </grid>
+
+            <grid model="@bind(wmVM.materialListModel)" width="100%" mold="paging" pageSize="10">
+                <columns>
+                    <column hflex="10" label="Работа" align="left"></column>
+                    <column hflex="3" label="Ед. изм." align="center"></column>
+                    <column hflex="3" label="Кол-во" align="center"></column>
+                    <column hflex="3" label="Цена за ед" align="center"></column>
+                    <column hflex="3" label="Сумма" align="center"></column>
+                </columns>
+                <template name="model">
+                    <row>
+                        <textbox inplace="true" value="@bind(each.name)"/>
+                        <textbox inplace="true" value="@bind(each.units)"/>
+                        <textbox inplace="true" value="@bind(each.quantity)"/>
+                        <textbox inplace="true" value="@bind(each.unitPrice)"/>
+                        <textbox inplace="true" value="@bind(each.amount)"/>
+                    </row>
+                </template>
+            </grid>
+        </hbox>
+        <button label="Добавить из шаблона"/>
+        <button label="Сохранить как шаблон"/>
+        <button label="Закрыть" onClick="wmWindow.detach()"/>
+        <space/>
+    </window>
+</zk>
