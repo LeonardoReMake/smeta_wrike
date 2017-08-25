@@ -35,6 +35,8 @@ public class WorkAndMaterialViewModel {
 
     private boolean addWork;
 
+    private boolean addMaterial;
+
     private String name;
 
     /** Единицы измерения. **/
@@ -117,6 +119,14 @@ public class WorkAndMaterialViewModel {
         this.addWork = addWork;
     }
 
+    public boolean isAddMaterial() {
+        return addMaterial;
+    }
+
+    public void setAddMaterial(boolean addMaterial) {
+        this.addMaterial = addMaterial;
+    }
+
     @AfterCompose
     public void init(@ExecutionArgParam("task") Task task) {
         List<Work> workList = workDAO.findByWorks(task);
@@ -181,6 +191,66 @@ public class WorkAndMaterialViewModel {
                     return;
                 }
            }
+        }
+
+    }
+    /* materials */
+
+    @Command
+    @NotifyChange("addMaterial")
+    public void onChangeVisibilityAddMaterial() {
+        if (addMaterial) {
+            addMaterial = false;
+        } else {
+            addMaterial = true;
+        }
+    }
+
+    @Command
+    @NotifyChange("materialListModel")
+    public void addNewMaterial() {
+        Material material = new Material();
+        material = Material.clone(material);
+        material.setName(name);
+        material.setUnits(units);
+        material.setQuantity(quantity);
+        material.setUnits(units);
+        material.setAmount(amount);
+
+        materialListModel.add(material);
+        materialDAO.create(material);
+    }
+
+    @Command
+    @NotifyChange("materialListModel")
+    public void updateNewMaterial(@BindingParam("material") Material material) {
+        if (material.getId() != null){
+            material = Material.clone(material);
+            for(int i = 0; i < materialListModel.size(); i++){
+                Material newMaterial = materialListModel.get(i);
+                if (newMaterial.getId().equals(material.getId())){
+                    materialListModel.set(i, material);
+                    materialDAO.saveOrUpdate(material);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Command
+    @NotifyChange("materialListModel")
+    public void deleteMaterial(@BindingParam("work") Material material) {
+        if(material.getId() != null){
+            material = Material.clone(material);
+            for(int i = 0; i < materialListModel.size(); i++){
+
+                Material newMaterial = materialListModel.get(i);
+                if (newMaterial.getId().equals(material.getId())) {
+                    materialListModel.remove(i);
+                    materialDAO.delete(materialDAO.get(material.getId()));
+                    return;
+                }
+            }
         }
 
     }

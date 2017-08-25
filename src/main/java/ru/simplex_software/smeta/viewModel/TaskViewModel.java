@@ -55,7 +55,7 @@ public class TaskViewModel {
     }
 
     @Command
-    public void getWorks(@BindingParam("task") Task task) {
+    public void getWorksAndMaterials(@BindingParam("task") Task task) {
         Map<String, Task> tasksMap = new HashMap<>();
 
         tasksMap.put("task", task);

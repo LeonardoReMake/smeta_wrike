@@ -101,4 +101,13 @@ public class Material extends LongIdPersistentEntity {
                 '}';
     }
 
+    public static Material clone(Material material) {
+        try {
+            return (Material) material.clone();
+        } catch (CloneNotSupportedException e) {
+            // not possible
+        }
+        return null;
+    }
+
 }

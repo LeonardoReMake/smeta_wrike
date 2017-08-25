@@ -22,7 +22,7 @@
                         <label value="@bind(each.shopName)"/>
                     </listcell>
                     <listcell>
-                        <button label="@load(taskVM.getButtonLabel(each))" onClick="@command(taskVM.getWorks(each))"/>
+                        <button label="@load(taskVM.getButtonLabel(each))" onClick="@command(taskVM.getWorksAndMaterials(each))"/>
                     </listcell>
                     <listcell>
                         <label value="@bind(each.amount)"/>
