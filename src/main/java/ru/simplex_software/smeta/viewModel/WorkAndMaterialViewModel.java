@@ -3,6 +3,7 @@ package ru.simplex_software.smeta.viewModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.AfterCompose;
+import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.ExecutionArgParam;
 import org.zkoss.bind.annotation.NotifyChange;
@@ -33,6 +34,60 @@ public class WorkAndMaterialViewModel {
     private ListModelList<Material> materialListModel;
 
     private boolean addWork;
+
+    private String name;
+
+    /** Единицы измерения. **/
+    private String units;
+
+    /** Кол-во. **/
+    private Double quantity;
+
+    /** Цена за единицу. **/
+    private Double unitPrice;
+
+    /** Сумма. **/
+    private Double amount;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUnits() {
+        return units;
+    }
+
+    public void setUnits(String units) {
+        this.units = units;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(Double unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
 
     public long getTotalSize(Task task) {
         return workDAO.getAllWorksCount(task);
@@ -81,5 +136,53 @@ public class WorkAndMaterialViewModel {
         }
     }
 
+    @Command
+    @NotifyChange("workListModel")
+    public void addNewWork() {
+        Work work = new Work();
+        work = Work.clone(work);
+        work.setName(name);
+        work.setUnits(units);
+        work.setQuantity(quantity);
+        work.setUnits(units);
+        work.setAmount(amount);
+
+        workListModel.add(work);
+        workDAO.create(work);
+    }
+
+    @Command
+    @NotifyChange("workListModel")
+    public void updateNewWork(@BindingParam("work") Work work) {
+        if (work.getId() != null){
+            work = Work.clone(work);
+            for(int i = 0; i < workListModel.size(); i++){
+                Work newWork = workListModel.get(i);
+                if (newWork.getId().equals(work.getId())){
+                    workListModel.set(i, work);
+                    workDAO.saveOrUpdate(work);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Command
+    @NotifyChange("workListModel")
+    public void deleteWork(@BindingParam("work") Work work) {
+        if(work.getId() != null){
+
+            for(int i = 0; i < workListModel.size(); i++){
+
+                Work newWork = workListModel.get(i);
+                if (newWork.getId().equals(work.getId())) {
+                    workListModel.remove(i);
+                    workDAO.delete(workDAO.get(work.getId()));
+                    return;
+                }
+           }
+        }
+
+    }
 
 }

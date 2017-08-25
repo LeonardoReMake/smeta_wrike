@@ -138,21 +138,6 @@ public class Task extends LongIdPersistentEntity {
         this.orderNumber = orderNumber;
     }
 
-    @Override
-    public String toString() {
-        return "Task{" +
-                "wrikeId='" + wrikeId + '\'' +
-                ", name='" + name + '\'' +
-                ", shopName='" + shopName + '\'' +
-                ", amount=" + amount +
-                ", isFilled=" + isFilled +
-                ", works=" + works +
-                ", creationDate=" + creationDate +
-                ", city='" + city + '\'' +
-                ", orderNumber='" + orderNumber + '\'' +
-                '}';
-    }
-
     public List<Material> getMaterials() {
         return materials;
     }

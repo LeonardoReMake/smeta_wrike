@@ -8,7 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class Work extends LongIdPersistentEntity {
+public class Work extends LongIdPersistentEntity implements Cloneable {
 
     private static Logger LOG = LoggerFactory.getLogger(Task.class);
 
@@ -90,18 +90,6 @@ public class Work extends LongIdPersistentEntity {
         this.task = task;
     }
 
-    @Override
-    public String toString() {
-        return "Work{" +
-                "name='" + name + '\'' +
-                ", units='" + units + '\'' +
-                ", quantity=" + quantity +
-                ", unitPrice=" + unitPrice +
-                ", amount=" + amount +
-                ", task=" + task +
-                '}';
-    }
-
     public boolean isEditingStatus() {
         return editingStatus;
     }
@@ -109,4 +97,14 @@ public class Work extends LongIdPersistentEntity {
     public void setEditingStatus(boolean editingStatus) {
         this.editingStatus = editingStatus;
     }
+
+    public static Work clone(Work work) {
+        try {
+            return (Work) work.clone();
+        } catch (CloneNotSupportedException e) {
+            // not possible
+        }
+        return null;
+    }
+
 }
