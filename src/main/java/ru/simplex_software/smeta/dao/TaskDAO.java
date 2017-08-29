@@ -13,7 +13,4 @@ public interface TaskDAO extends Dao<Task, Long> {
     @Finder(query = "from Task")
     List<Task> findAllTasks();
 
-    @Finder(query = "select count(*) from Task")
-    long getTaskCount();
-
 }

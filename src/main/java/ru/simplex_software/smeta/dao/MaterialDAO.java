@@ -16,13 +16,4 @@ public interface MaterialDAO extends Dao<Material, Long> {
     @Finder(query = "from Material where task = :task order by id")
     List<Material> findByMaterials(@Named("task") Task task);
 
-    @Finder(query = "from Material")
-    List<Material> findAllMaterials();
-
-    @Finder(query = "select count(*) from Material")
-    long getAllMaterials();
-
-    @Finder(query = "select count(*) from Material where task = :task")
-    long getAllMaterialsCount(@Named("task") Task task);
-
 }

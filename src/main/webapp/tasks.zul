@@ -12,7 +12,10 @@
                 <listheader label="Сумма"/>
             </listhead>
             <template name="model">
-                <listitem style="background-color:yellow">
+                <listitem>
+                    <attribute name="style" if="${wmVM.checkTask}">
+                        background-color: yellow;
+                    </attribute>
                     <listcell>
                         <a href="http://wrike.com/open.html?id=165186589">
                             <label value="@bind(each.name)" />
