@@ -34,7 +34,7 @@ public class Task extends LongIdPersistentEntity {
     private Double amount;
 
     /** Указывает заполнена ли задача работами. **/
-    private boolean isFilled = false;
+    private boolean filled = false;
 
     /** Работы, которые надо выполнить по этой задаче. **/
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "task")
@@ -53,22 +53,22 @@ public class Task extends LongIdPersistentEntity {
     /** Номер заявки. Например: INC1343892. **/
     private String orderNumber;
 
-    public Task(String wrikeId, String name, String shopName, Double amount, boolean isFilled) {
+    public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
         this.name = name;
         this.shopName = shopName;
         this.amount = amount;
-        this.isFilled = isFilled;
+        this.filled = filled;
     }
 
     public Task() {}
 
     public boolean isFilled() {
-        return isFilled;
+        return filled;
     }
 
     public void setFilled(boolean filled) {
-        this.isFilled = filled;
+        this.filled = filled;
     }
 
     public String getWrikeId() {

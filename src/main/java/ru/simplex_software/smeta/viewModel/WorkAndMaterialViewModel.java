@@ -38,13 +38,31 @@ public class WorkAndMaterialViewModel {
 
     private ListModelList<Material> materialListModel;
 
+    private ListModelList templateWorkAndMaterialList;
+
     private Work work;
 
     private Material material;
 
-    private boolean addWork;
+    private boolean canWork = false;
 
-    private boolean addMaterial;
+    private boolean canMaterial;
+
+    public boolean isCanWork() {
+        return canWork;
+    }
+
+    public void setCanWork(boolean canWork) {
+        this.canWork = canWork;
+    }
+
+    public boolean isCanMaterial() {
+        return canMaterial;
+    }
+
+    public void setCanMaterial(boolean canMaterial) {
+        this.canMaterial = canMaterial;
+    }
 
     public ListModelList<Material> getMaterialListModel() {
         return materialListModel;
@@ -58,24 +76,16 @@ public class WorkAndMaterialViewModel {
         return workListModel;
     }
 
+    public ListModelList<WorkAndMaterialViewModel> getTemplateWorkAndMaterialList() {
+        return templateWorkAndMaterialList;
+    }
+
+    public void setTemplateWorkAndMaterialList(ListModelList<WorkAndMaterialViewModel> templateWorkAndMaterialList) {
+        this.templateWorkAndMaterialList = templateWorkAndMaterialList;
+    }
+
     public void setWorkListModel(ListModelList<Work> workListModel) {
         this.workListModel = workListModel;
-    }
-
-    public boolean isAddWork() {
-        return addWork;
-    }
-
-    public void setAddWork(boolean addWork) {
-        this.addWork = addWork;
-    }
-
-    public boolean isAddMaterial() {
-        return addMaterial;
-    }
-
-    public void setAddMaterial(boolean addMaterial) {
-        this.addMaterial = addMaterial;
     }
 
     public Work getWork() {
@@ -114,20 +124,18 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange("addWork")
+    @NotifyChange("canWork")
     public void onChangeVisibilityAddWork() {
-        if (addWork) {
-            addWork = false;
-        } else {
+        if (!canWork) {
             work = new Work(this.task);
-            addWork = true;
         }
+        canWork = !canWork;
     }
 
     @Command
     @NotifyChange("workListModel")
     public void updateNewWork(@BindingParam("work") Work work) {
-        workListModel.set(workListModel.indexOf(work), work);
+        countAmount(work);
         workDAO.saveOrUpdate(work);
     }
 
@@ -139,40 +147,41 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange({"workListModel", "addWork", "work"})
+    @NotifyChange({"workListModel", "canWork", "work"})
     public void addNewWork() {
         workListModel.add(work);
+        countAmount(work);
         workDAO.saveOrUpdate(work);
         work = null;
-        addWork = false;
+        canWork = false;
     }
 
     /* materials */
 
     @Command
-    @NotifyChange("addMaterial")
+    @NotifyChange("canMaterial")
     public void onChangeVisibilityAddMaterial() {
-        if (addMaterial) {
-            addMaterial = false;
-        } else {
-            this.material = new Material(this.task);
-            addMaterial = true;
+        if (!canMaterial) {
+            material = new Material(this.task);
         }
+        canMaterial = !canMaterial;
     }
 
     @Command
-    @NotifyChange({"materialListModel", "material", "addMaterial"})
+    @NotifyChange({"materialListModel", "material", "canMaterial"})
     public void addNewMaterial() {
         materialListModel.add(material);
+        countAmount(material);
         materialDAO.saveOrUpdate(material);
         material = null;
-        addMaterial = false;
+        canMaterial = false;
     }
 
     @Command
     @NotifyChange("materialListModel")
     public void updateNewMaterial(@BindingParam("material") Material material) {
-        materialListModel.set(materialListModel.indexOf(material), material);
+        countAmount(material);
+        material.setAmount(material.getQuantity() * material.getUnitPrice());
         materialDAO.saveOrUpdate(material);
     }
 
@@ -181,6 +190,12 @@ public class WorkAndMaterialViewModel {
     public void deleteMaterial(@BindingParam("material") Material material) {
         materialListModel.remove(material);
         materialDAO.delete(materialDAO.get(material.getId()));
+    }
+
+    private void countAmount(Element element) {
+        if (element.getQuantity() != null && element.getUnitPrice() != null) {
+            element.setAmount(element.getQuantity() * element.getUnitPrice());
+        }
     }
 
 }

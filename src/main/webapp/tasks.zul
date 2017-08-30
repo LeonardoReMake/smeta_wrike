@@ -13,19 +13,17 @@
             </listhead>
             <template name="model">
                 <listitem>
-                    <attribute name="style" if="${wmVM.checkTask}">
+                    <attribute name="style" if="${!each.filled}">
                         background-color: yellow;
                     </attribute>
                     <listcell>
-                        <a href="http://wrike.com/open.html?id=165186589">
                             <label value="@bind(each.name)" />
-                        </a>
                     </listcell>
                     <listcell>
                         <label value="@bind(each.shopName)"/>
                     </listcell>
                     <listcell>
-                        <button label="@load(taskVM.getButtonLabel(each))" onClick="@command(taskVM.getWorksAndMaterials(each))"/>
+                        <button label="@bind((each.filled) ? 'Редактировать' : 'Заполнить')" onClick="@command(taskVM.getWorksAndMaterials(each))"/>
                     </listcell>
                     <listcell>
                         <label value="@bind(each.amount)"/>
@@ -33,7 +31,7 @@
                 </listitem>
             </template>
         </listbox>
-        <button label="Отчёт (Excel или Pdf)"/>
+        <button label="Отчёт (Excel или Pdf)" onClick="@command('getReport')"/>
     </window>
 
 </zk>

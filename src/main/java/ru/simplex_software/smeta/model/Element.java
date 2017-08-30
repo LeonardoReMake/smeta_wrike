@@ -74,6 +74,7 @@ public class Element extends LongIdPersistentEntity {
     }
 
     public void setAmount(Double amount) {
+        amount = unitPrice * quantity;
         this.amount = amount;
     }
 

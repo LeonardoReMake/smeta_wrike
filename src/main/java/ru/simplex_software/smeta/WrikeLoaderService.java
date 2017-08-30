@@ -46,22 +46,22 @@ public class WrikeLoaderService {
     public void createNewWorks(Task task) {
         for (int i = 0; i < 5; i++) {
             Work work = new Work("Замена замка мебельного",
-                                "шт",
-                                (double) 3,
-                                (double) 150,
-                                (double) 450, task);
-            workDAO.saveOrUpdate(work);
+                                  "шт",
+                                 3d,
+                                150d,
+                                 450d, task);
+            task.getWorks().add(work);
         }
     }
 
     public void createNewMaterials(Task task) {
         for (int i = 0; i < 5; i++) {
             Material material = new Material("Замена замка мебельного",
-                                "шт",
-                                (double) 3,
-                                (double) 150,
-                                (double) 450, task);
-            materialDAO.saveOrUpdate(material);
+                                   "шт",
+                                  3d,
+                                 150d,
+                                  450d, task);
+            task.getMaterials().add(material);
         }
     }
 
