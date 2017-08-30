@@ -11,11 +11,13 @@ import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zul.ListModelList;
 import ru.simplex_software.smeta.dao.MaterialDAO;
+import ru.simplex_software.smeta.dao.TemplateDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.model.Element;
 import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
+import ru.simplex_software.smeta.model.template.Template;
 import ru.simplex_software.zkutils.DetachableModel;
 
 import java.util.List;
@@ -31,22 +33,32 @@ public class WorkAndMaterialViewModel {
     @WireVariable
     private MaterialDAO materialDAO;
 
+    @WireVariable
+    private TemplateDAO templateDAO;
+
     @DetachableModel
     private Task task;
+
+    @DetachableModel
+    private Template template;
 
     private ListModelList<Work> workListModel;
 
     private ListModelList<Material> materialListModel;
 
-    private ListModelList templateWorkAndMaterialList;
+    private ListModelList<Template> templateWorkAndMaterialList;
 
     private Work work;
 
     private Material material;
 
-    private boolean canWork = false;
+    private boolean canWork;
 
     private boolean canMaterial;
+
+    private boolean canToTemplate;
+
+    private boolean canFromTemplate;
 
     public boolean isCanWork() {
         return canWork;
@@ -76,11 +88,11 @@ public class WorkAndMaterialViewModel {
         return workListModel;
     }
 
-    public ListModelList<WorkAndMaterialViewModel> getTemplateWorkAndMaterialList() {
+    public ListModelList<Template> getTemplateWorkAndMaterialList() {
         return templateWorkAndMaterialList;
     }
 
-    public void setTemplateWorkAndMaterialList(ListModelList<WorkAndMaterialViewModel> templateWorkAndMaterialList) {
+    public void setTemplateWorkAndMaterialList(ListModelList<Template> templateWorkAndMaterialList) {
         this.templateWorkAndMaterialList = templateWorkAndMaterialList;
     }
 
@@ -110,6 +122,30 @@ public class WorkAndMaterialViewModel {
 
     public void setTask(Task task) {
         this.task = task;
+    }
+
+    public boolean isCanToTemplate() {
+        return canToTemplate;
+    }
+
+    public void setCanToTemplate(boolean canToTemplate) {
+        this.canToTemplate = canToTemplate;
+    }
+
+    public Template getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Template template) {
+        this.template = template;
+    }
+
+    public boolean isCanFromTemplate() {
+        return canFromTemplate;
+    }
+
+    public void setCanFromTemplate(boolean canFromTemplate) {
+        this.canFromTemplate = canFromTemplate;
     }
 
     @AfterCompose
@@ -196,6 +232,45 @@ public class WorkAndMaterialViewModel {
         if (element.getQuantity() != null && element.getUnitPrice() != null) {
             element.setAmount(element.getQuantity() * element.getUnitPrice());
         }
+    }
+
+    @Command
+    @NotifyChange({"canToTemplate", "template", "templateWorkAndMaterialList"})
+    public void addTemplate() {
+        template.setWorkList(workListModel);
+        template.setMaterialList(materialListModel);
+        templateDAO.saveOrUpdate(template);
+        canToTemplate = !canToTemplate;
+        template = null;
+    }
+
+    @Command
+    @NotifyChange({"canToTemplate", "template"})
+    public void addNewTemplate() {
+        if (!canToTemplate) {
+            this.template = new Template();
+        }
+        canToTemplate = !canToTemplate;
+    }
+
+    @Command
+    @NotifyChange({"canFromTemplate", "template", "templateWorkAndMaterialList"})
+    public void findNewTemplate() {
+        if (!canFromTemplate) {
+            List<Template> templateList = templateDAO.findAllTemplates();
+            templateWorkAndMaterialList = new ListModelList<>(templateList);
+        }
+        canFromTemplate = !canFromTemplate;
+    }
+
+    @Command
+    @NotifyChange({"canFromTemplate", "templateWorkAndMaterialList", "workListModel", "materialListModel"})
+    public void findTemplate(@BindingParam("template") Template template) {
+        List<Work> workList = workDAO.findByTemplate(template);
+        workListModel = new ListModelList<>(workList);
+
+        List<Material> materialList = materialDAO.findByTemplate(template);
+        materialListModel = new ListModelList<>(materialList);
     }
 
 }

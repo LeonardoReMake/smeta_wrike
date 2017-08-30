@@ -18,6 +18,7 @@
     <dao:hibernate interface="ru.simplex_software.smeta.dao.TaskDAO" id="taskDAO" />
     <dao:hibernate interface="ru.simplex_software.smeta.dao.WorkDAO" id="workDAO" />
     <dao:hibernate interface="ru.simplex_software.smeta.dao.MaterialDAO" id="materialDAO" />
+    <dao:hibernate interface="ru.simplex_software.smeta.dao.TemplateDAO" id="templateDAO" />
 
     <tx:annotation-driven transaction-manager="transactionManager"/>
 

@@ -49,7 +49,7 @@ public class WrikeLoaderService {
                                   "шт",
                                  3d,
                                 150d,
-                                 450d, task);
+                                 450d, task, null);
             task.getWorks().add(work);
         }
     }
@@ -60,7 +60,7 @@ public class WrikeLoaderService {
                                    "шт",
                                   3d,
                                  150d,
-                                  450d, task);
+                                  450d, task, null);
             task.getMaterials().add(material);
         }
     }

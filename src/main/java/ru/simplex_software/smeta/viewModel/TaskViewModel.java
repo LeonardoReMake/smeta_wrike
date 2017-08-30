@@ -59,7 +59,7 @@ public class TaskViewModel {
 
         tasksMap.put("task", task);
 
-        Executions.createComponents("/test1.zul", null, tasksMap);
+        Executions.createComponents("/dialog.zul", null, tasksMap);
     }
 
     @Command

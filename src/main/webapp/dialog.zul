@@ -4,6 +4,32 @@
     xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
     <window id="wmWindow" title="Редактирование задачи" mode="modal" closable="true" width="100%"
             viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')">
+        <hbox style="margin: 5px">
+            <vbox>
+                <button visible="@bind(!wmVM.canFromTemplate)" label="Добавить из шаблона" onClick="@command('findNewTemplate')"/>
+                <hbox visible="@bind(wmVM.canFromTemplate)">
+                    <combobox width="150px" model="@load(wmVM.templateWorkAndMaterialList)" autocomplete="true"
+                              selectedItem="@bind(wmVM.template)">
+                        <template name="model">
+                            <comboitem label="@load(each.name)"/>
+                        </template>
+                    </combobox>
+                    <hbox>
+                        <intbox format="#,##0" placeholder="Количество"></intbox>
+                        <button label="Добавить" onClick="@command('findTemplate', each=template)"/>
+                        <button label="Отменить" onClick="@command('findNewTemplate')"/>
+                    </hbox>
+                </hbox>
+            </vbox>
+            <vbox>
+                <button label="Сохранить как шаблон" visible="@bind(!wmVM.canToTemplate)" onClick="@command('addNewTemplate')"/>
+                <hbox visible="@bind(wmVM.canToTemplate)">
+                    <textbox value="@bind(wmVM.template.name)" placeholder="Имя шаблона"/>
+                    <button label="Сохранить" onClick="@command('addTemplate')" />
+                    <button label="Отменить" onClick="@command('addNewTemplate')" />
+                </hbox>
+            </vbox>
+        </hbox>
         <hbox>
             <vbox>
                 <grid model="@load(wmVM.workListModel))" width="100%" mold="paging" pageSize="60">
@@ -80,11 +106,11 @@
                 </grid>
             </vbox>
         </hbox>
-        <button label="Добавить из шаблона"/>
-        <button label="Сохранить как шаблон"/>
+        <hbox>
+            <button label="Добавить работу" visible="@bind(!wmVM.canWork)" onClick="@command('onChangeVisibilityAddWork')"/>
+            <button label="Добавить материал" visible="@bind(!wmVM.canMaterial)" onClick="@command('onChangeVisibilityAddMaterial')"/>
+        </hbox>
         <button label="Закрыть" onClick="wmWindow.detach()"/>
-        <button label="Добавить работу" visible="@bind(!wmVM.canWork)" onClick="@command('onChangeVisibilityAddWork')"/>
-        <button label="Добавить материал" visible="@bind(!wmVM.canMaterial)" onClick="@command('onChangeVisibilityAddMaterial')"/>
         <space/>
     </window>
 </zk>
