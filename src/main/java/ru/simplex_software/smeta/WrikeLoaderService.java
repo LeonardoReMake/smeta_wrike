@@ -12,6 +12,7 @@ import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,14 +33,28 @@ public class WrikeLoaderService {
 
     public void loadNewTasks() {
         List<Task> taskInDb = taskDAO.findAllTasks();
-        if (taskInDb.size() == 0) {
-            List<Task> tasks = wrikeTaskDAO.findTasks();
 
-            for (Task task : tasks) {
-                taskDAO.saveOrUpdate(task);
+        List<Task> newTasks;
+
+        if (taskInDb.size() != 0) {
+            LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
+            LOG.info("Last updated task date: "+lastCreationDate);
+            newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.plusSeconds(1));
+        } else {
+            newTasks = wrikeTaskDAO.findTasks();
+        }
+
+        if (newTasks.size() != 0) {
+            LOG.info("find "+newTasks.size()+" new tasks");
+            for (Task task : newTasks) {
+                parseTaskTitle(task);
+                task.setPath(wrikeTaskDAO.findPathForTask(task));
                 createNewWorks(task);
                 createNewMaterials(task);
+                taskDAO.saveOrUpdate(task);
             }
+        } else {
+            LOG.info("No new tasks");
         }
     }
 
@@ -65,5 +80,58 @@ public class WrikeLoaderService {
         }
     }
 
+    private void parseTaskTitle(Task task) {
+        String rawTitle = task.getName();
+
+        String[] parts = rawTitle.split(" ");
+
+        if (parts.length < 4) {
+            LOG.warn("could not parse string: "+rawTitle);
+            return;
+        }
+
+        int index = 0;
+        String number = "";
+
+        if (parts[index].contains(":")) {
+            number = parts[index].substring(0, parts[index].length()-1);
+            index++;
+        }
+
+        String city = parts[index];
+        if (city.equals("Заявка")) {
+            LOG.warn("could not parse string: "+rawTitle);
+            return;
+        }
+        index++;
+
+        StringBuilder shop = new StringBuilder();
+
+        int i = index;
+        for (; i < parts.length && isShop(parts[i]); i++) {
+            shop.append(parts[i]).append(" ");
+        }
+
+        while (i < parts.length && !parts[i].startsWith("INC")) { i++; }
+
+        String system = "";
+        if (!isShop(parts[i-1])) {
+            system = parts[i-1];
+        }
+
+        String id = "";
+        if (i < parts.length && parts[i].startsWith("INC")) {
+            id = parts[i];
+        }
+
+        task.setShopName(shop.toString());
+        task.setCity(city);
+        task.setOrderNumber(id);
+    }
+
+    private boolean isShop(String str) {
+        return !(str.equals("OCS") || str.equals("BCS")
+                || str.equals("RCS") || str.equals("FO") || str.startsWith("INC"));
+    }
 
 }
