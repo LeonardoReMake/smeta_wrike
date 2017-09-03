@@ -75,10 +75,11 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
     private Object getPrincipal(Map<String, Object> map) {
         ArrayList contacts = (ArrayList) map.get("data");
         Map data = (Map)contacts.get(0);
+        String accountId = (String)((Map)((List)data.get("profiles")).get(0)).get("accountId");
         User user = new User();
         user.setFirstName((String) data.get("firstName"));
         user.setLastName((String) data.get("lastName"));
-        user.setId((String) data.get("id"));
+        user.setId(accountId);
         return user;
     }
 

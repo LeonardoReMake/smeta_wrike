@@ -1,16 +1,19 @@
 package ru.simplex_software.smeta.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +25,7 @@ public class Task extends LongIdPersistentEntity {
 
     /** id, которое дает wrike каждой задаче. **/
     @NotNull
+    @Column(unique = true)
     private String wrikeId;
 
     /** Полное название задачи, указанное в wrike. **/
@@ -46,13 +50,25 @@ public class Task extends LongIdPersistentEntity {
     private List<Material> materials = new ArrayList<>();
 
     /** Дата создания задачи. **/
-    private LocalDate creationDate;
+    @JsonFormat
+            (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private LocalDateTime createdDate;
 
     /** Название города. **/
     private String city;
 
     /** Номер заявки. Например: INC1343892. **/
     private String orderNumber;
+
+    /** Ссылка на задачу в wrike. **/
+    private String wrikeLink;
+
+    /** Путь к задаче в wrike. **/
+    private String path;
+
+    /** Id папок в wrike. **/
+    @Transient
+    private List<String> parentIds;
 
     public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
@@ -114,12 +130,12 @@ public class Task extends LongIdPersistentEntity {
         this.works = works;
     }
 
-    public LocalDate getCreationDate() {
-        return creationDate;
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
     }
 
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
     public String getCity() {
@@ -144,5 +160,30 @@ public class Task extends LongIdPersistentEntity {
 
     public void setMaterials(List<Material> materials) {
         this.materials = materials;
+    }
+
+    public String getWrikeLink() {
+        return wrikeLink;
+    }
+
+    @JsonSetter("permalink")
+    public void setWrikeLink(String wrikeLink) {
+        this.wrikeLink = wrikeLink;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public List<String> getParentIds() {
+        return parentIds;
+    }
+
+    public void setParentIds(List<String> parentIds) {
+        this.parentIds = parentIds;
     }
 }
