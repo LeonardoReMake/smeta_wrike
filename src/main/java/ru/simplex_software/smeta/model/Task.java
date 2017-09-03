@@ -25,7 +25,6 @@ public class Task extends LongIdPersistentEntity {
 
     /** id, которое дает wrike каждой задаче. **/
     @NotNull
-    @Column(unique = true)
     private String wrikeId;
 
     /** Полное название задачи, указанное в wrike. **/

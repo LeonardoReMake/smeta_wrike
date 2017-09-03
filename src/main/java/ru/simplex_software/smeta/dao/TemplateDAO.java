@@ -16,6 +16,6 @@ public interface TemplateDAO extends Dao<Template, Long>{
     List<Template> findAllTemplates();
 
     @Finder(query = "from Template where name = :name")
-    List<Template> findTemplatesByName(@Named("name") String name);
+    List<Template> findByName(@Named("name") String name);
 
 }

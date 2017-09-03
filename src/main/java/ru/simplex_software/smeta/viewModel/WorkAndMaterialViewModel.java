@@ -20,6 +20,7 @@ import ru.simplex_software.smeta.model.Work;
 import ru.simplex_software.smeta.model.template.Template;
 import ru.simplex_software.zkutils.DetachableModel;
 
+import java.util.Iterator;
 import java.util.List;
 
 @VariableResolver(ru.simplex_software.zkutils.DaoVariableResolver.class)
@@ -39,18 +40,17 @@ public class WorkAndMaterialViewModel {
     @DetachableModel
     private Task task;
 
-    @DetachableModel
-    private Template template;
+    private ListModelList<Work> taskWorkListModel;
 
-    private ListModelList<Work> workListModel;
+    private ListModelList<Material> taskMaterialListModel;
 
-    private ListModelList<Material> materialListModel;
-
-    private ListModelList<Template> templateWorkAndMaterialList;
+    private ListModelList<Template> templateListModel;
 
     private Work work;
 
     private Material material;
+
+    private Template template = new Template();
 
     private boolean canWork;
 
@@ -59,6 +59,36 @@ public class WorkAndMaterialViewModel {
     private boolean canToTemplate;
 
     private boolean canFromTemplate;
+
+    private boolean fromTemplate;
+
+    private boolean toTemplate;
+
+    public boolean isFromTemplate() {
+        return fromTemplate;
+    }
+
+    public void setFromTemplate(boolean fromTemplate) {
+        this.fromTemplate = fromTemplate;
+    }
+
+    public boolean isToTemplate() {
+        return toTemplate;
+    }
+
+    public void setToTemplate(boolean toTemplate) {
+        this.toTemplate = toTemplate;
+    }
+
+    private int countTemplate;
+
+    public int getCountTemplate() {
+        return countTemplate;
+    }
+
+    public void setCountTemplate(int countTemplate) {
+        this.countTemplate = countTemplate;
+    }
 
     public boolean isCanWork() {
         return canWork;
@@ -76,28 +106,28 @@ public class WorkAndMaterialViewModel {
         this.canMaterial = canMaterial;
     }
 
-    public ListModelList<Material> getMaterialListModel() {
-        return materialListModel;
+    public ListModelList<Material> getTaskMaterialListModel() {
+        return taskMaterialListModel;
     }
 
-    public void setMaterialListModel(ListModelList<Material> materialListModel) {
-        this.materialListModel = materialListModel;
+    public void setTaskMaterialListModel(ListModelList<Material> taskMaterialListModel) {
+        this.taskMaterialListModel = taskMaterialListModel;
     }
 
-    public ListModelList<Work> getWorkListModel() {
-        return workListModel;
+    public ListModelList<Work> getTaskWorkListModel() {
+        return taskWorkListModel;
     }
 
-    public ListModelList<Template> getTemplateWorkAndMaterialList() {
-        return templateWorkAndMaterialList;
+    public ListModelList<Template> getTemplateListModel() {
+        return templateListModel;
     }
 
-    public void setTemplateWorkAndMaterialList(ListModelList<Template> templateWorkAndMaterialList) {
-        this.templateWorkAndMaterialList = templateWorkAndMaterialList;
+    public void setTemplateListModel(ListModelList<Template> templateListModel) {
+        this.templateListModel = templateListModel;
     }
 
-    public void setWorkListModel(ListModelList<Work> workListModel) {
-        this.workListModel = workListModel;
+    public void setTaskWorkListModel(ListModelList<Work> taskWorkListModel) {
+        this.taskWorkListModel = taskWorkListModel;
     }
 
     public Work getWork() {
@@ -150,11 +180,14 @@ public class WorkAndMaterialViewModel {
 
     @AfterCompose
     public void init(@ExecutionArgParam("task") Task task) {
-        List<Work> workList = workDAO.findByWorks(task);
-        workListModel = new ListModelList<>(workList);
+        List<Work> workList = workDAO.findByTask(task);
+        taskWorkListModel = new ListModelList<>(workList);
 
-        List<Material> materialList = materialDAO.findByMaterials(task);
-        materialListModel = new ListModelList<>(materialList);
+        List<Material> materialList = materialDAO.findByTasks(task);
+        taskMaterialListModel = new ListModelList<>(materialList);
+
+        List<Template> templateList = templateDAO.findAllTemplates();
+        templateListModel = new ListModelList<>(templateList);
 
         this.task = task;
     }
@@ -163,29 +196,31 @@ public class WorkAndMaterialViewModel {
     @NotifyChange("canWork")
     public void onChangeVisibilityAddWork() {
         if (!canWork) {
-            work = new Work(this.task);
+            work = new Work();
+            work.setTask(task);
         }
         canWork = !canWork;
     }
 
     @Command
-    @NotifyChange("workListModel")
+    @NotifyChange("taskWorkListModel")
     public void updateNewWork(@BindingParam("work") Work work) {
         countAmount(work);
+        taskWorkListModel.notifyChange(work);
         workDAO.saveOrUpdate(work);
     }
 
     @Command
-    @NotifyChange("workListModel")
+    @NotifyChange("taskWorkListModel")
     public void deleteWork(@BindingParam("work") Work work) {
-        workListModel.remove(work);
+        taskWorkListModel.remove(work);
         workDAO.delete(workDAO.get(work.getId()));
     }
 
     @Command
-    @NotifyChange({"workListModel", "canWork", "work"})
+    @NotifyChange({"taskWorkListModel", "canWork", "work"})
     public void addNewWork() {
-        workListModel.add(work);
+        taskWorkListModel.add(work);
         countAmount(work);
         workDAO.saveOrUpdate(work);
         work = null;
@@ -198,15 +233,16 @@ public class WorkAndMaterialViewModel {
     @NotifyChange("canMaterial")
     public void onChangeVisibilityAddMaterial() {
         if (!canMaterial) {
-            material = new Material(this.task);
+            material = new Material();
+            material.setTask(this.task);
         }
         canMaterial = !canMaterial;
     }
 
     @Command
-    @NotifyChange({"materialListModel", "material", "canMaterial"})
+    @NotifyChange({"taskMaterialListModel", "material", "canMaterial"})
     public void addNewMaterial() {
-        materialListModel.add(material);
+        taskMaterialListModel.add(material);
         countAmount(material);
         materialDAO.saveOrUpdate(material);
         material = null;
@@ -214,17 +250,17 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange("materialListModel")
+    @NotifyChange("taskMaterialListModel")
     public void updateNewMaterial(@BindingParam("material") Material material) {
         countAmount(material);
-        material.setAmount(material.getQuantity() * material.getUnitPrice());
+        taskMaterialListModel.set(taskMaterialListModel.indexOf(material), material);
         materialDAO.saveOrUpdate(material);
     }
 
     @Command
-    @NotifyChange("materialListModel")
+    @NotifyChange("taskMaterialListModel")
     public void deleteMaterial(@BindingParam("material") Material material) {
-        materialListModel.remove(material);
+        taskMaterialListModel.remove(material);
         materialDAO.delete(materialDAO.get(material.getId()));
     }
 
@@ -234,43 +270,190 @@ public class WorkAndMaterialViewModel {
         }
     }
 
+    // save template
     @Command
-    @NotifyChange({"canToTemplate", "template", "templateWorkAndMaterialList"})
+    @NotifyChange({"canToTemplate", "template", "templateListModel", "taskWorkListModel", "taskMaterialListModel", "fromTemplate", "canFromTemplate"})
     public void addTemplate() {
-        template.setWorkList(workListModel);
-        template.setMaterialList(materialListModel);
-        templateDAO.saveOrUpdate(template);
+        Template newTemplate = new Template();
+        for (Work work : taskWorkListModel) {
+            Work newTemplateWork = new Work();
+            newTemplateWork.setQuantity(work.getQuantity());
+            newTemplateWork.setUnitPrice(work.getUnitPrice());
+            newTemplateWork.setUnits(work.getUnits());
+            newTemplateWork.setAmount(work.getAmount());
+            newTemplateWork.setName(work.getName());
+            newTemplateWork.setTemplate(newTemplate);
+            newTemplate.getWorkList().add(newTemplateWork);
+        }
+
+        for (Material material : taskMaterialListModel) {
+            Material newTemplateMaterial = new Material();
+            newTemplateMaterial.setQuantity(material.getQuantity());
+            newTemplateMaterial.setUnitPrice(material.getUnitPrice());
+            newTemplateMaterial.setUnits(material.getUnits());
+            newTemplateMaterial.setAmount(material.getAmount());
+            newTemplateMaterial.setTemplate(newTemplate);
+            newTemplateMaterial.setName(material.getName());
+            newTemplate.getMaterialList().add(newTemplateMaterial);
+        }
+
+        newTemplate.setName(template.getName());
+        templateDAO.create(newTemplate);
+
+        fromTemplate = !fromTemplate;
         canToTemplate = !canToTemplate;
-        template = null;
+        canFromTemplate = !canFromTemplate;
+
+        work = null;
+        material = null;
     }
 
+    // create new template
     @Command
-    @NotifyChange({"canToTemplate", "template"})
+    @NotifyChange({"canToTemplate", "template", "canFromTemplate", "fromTemplate"})
     public void addNewTemplate() {
         if (!canToTemplate) {
-            this.template = new Template();
+            template = new Template();
         }
-        canToTemplate = !canToTemplate;
+        canToTemplate = !canFromTemplate;
+        canFromTemplate = !canFromTemplate;
+        fromTemplate = !fromTemplate;
     }
 
     @Command
-    @NotifyChange({"canFromTemplate", "template", "templateWorkAndMaterialList"})
-    public void findNewTemplate() {
-        if (!canFromTemplate) {
-            List<Template> templateList = templateDAO.findAllTemplates();
-            templateWorkAndMaterialList = new ListModelList<>(templateList);
-        }
+    @NotifyChange({"canFromTemplate", "templateListModel", "canToTemplate", "toTemplate"})
+    public void cancelFindingTemplate() {
+        canToTemplate = !canFromTemplate;
+        canFromTemplate = !canFromTemplate;
+        toTemplate = !toTemplate;
+    }
+
+    @Command
+    @NotifyChange({"canFromTemplate", "templateListModel", "fromTemplate", "canToTemplate", "canFromTemplate"})
+    public void cancelAddingTemplate() {
+        fromTemplate = !fromTemplate;
+        canToTemplate = !canToTemplate;
         canFromTemplate = !canFromTemplate;
     }
 
     @Command
-    @NotifyChange({"canFromTemplate", "templateWorkAndMaterialList", "workListModel", "materialListModel"})
-    public void findTemplate(@BindingParam("template") Template template) {
-        List<Work> workList = workDAO.findByTemplate(template);
-        workListModel = new ListModelList<>(workList);
+    @NotifyChange({"canFromTemplate", "templateListModel", "canToTemplate", "canToTemplate", "toTemplate"})
+    public void findNewTemplate() {
+        if (!canFromTemplate) {
+            List<Template> templateList = templateDAO.findAllTemplates();
+            templateListModel = new ListModelList<>(templateList);
+        }
 
-        List<Material> materialList = materialDAO.findByTemplate(template);
-        materialListModel = new ListModelList<>(materialList);
+        toTemplate = !toTemplate;
+        canFromTemplate = !canFromTemplate;
+    }
+
+    // применить шаблон
+    @Command
+    @NotifyChange({"canFromTemplate", "canToTemplate", "taskWorkListModel", "taskMaterialListModel", "fromTemplate", "toTemplate"})
+    public void findTemplate() {
+        int countTemplate = this.countTemplate;
+
+        for (int i = 0; i < countTemplate; i++) {
+            // template's works
+            List<Work> templateWorkList = workDAO.findByTemplate(this.template);
+            List<Material> templateMaterialList = materialDAO.findByTemplate(this.template);
+
+            Iterator<Work> workIterator = templateWorkList.iterator();
+            Iterator<Material> materialIterator = templateMaterialList.iterator();
+
+            removeElementsOfListIteratorForWorks(workIterator);
+            createNewWork(templateWorkList);
+
+            removeElementsOfListIteratorForMaterial(materialIterator);
+            createNewMaterial(templateMaterialList);
+        }
+
+        canToTemplate = !canFromTemplate;
+        canFromTemplate = !canFromTemplate;
+        toTemplate = !toTemplate;
+    }
+
+    private void updateAmount(Work work) {
+        work.setAmount(work.getQuantity() * work.getUnitPrice());
+    }
+
+    private void removeElementsOfListIteratorForWorks(Iterator<? extends Element> iterator) {
+        boolean isRemove;
+
+        while (iterator.hasNext()) {
+            Element outerWork = iterator.next();
+            LOG.info(outerWork.toString());
+            LOG.info(outerWork.getName());
+            isRemove = true;
+            for (Work innerWork : taskWorkListModel) {
+                if (innerWork.getName().equals(outerWork.getName())
+                        && innerWork.getUnitPrice().equals(outerWork.getUnitPrice()) && isRemove) {
+                    innerWork.setQuantity(innerWork.getQuantity() + outerWork.getQuantity());
+                    innerWork.setAmount(innerWork.getQuantity() * innerWork.getUnitPrice());
+                    taskWorkListModel.notifyChange(innerWork);
+                    workDAO.saveOrUpdate(innerWork);
+                    isRemove = false;
+                }
+            }
+            if (!isRemove)
+                iterator.remove();
+        }
+
+    }
+
+    private void removeElementsOfListIteratorForMaterial(Iterator<? extends Element> iterator) {
+        boolean isRemove;
+
+        while (iterator.hasNext()) {
+            isRemove = true;
+            Element outerMaterial = iterator.next();
+            for (Material innerMaterial : taskMaterialListModel) {
+                if (innerMaterial.getName().equals(outerMaterial.getName()) && innerMaterial.getUnits().equals(outerMaterial.getUnits())
+                        && innerMaterial.getUnitPrice().equals(outerMaterial.getUnitPrice()) && isRemove) {
+                    innerMaterial.setQuantity(innerMaterial.getQuantity() + outerMaterial.getQuantity());
+                    innerMaterial.setAmount(innerMaterial.getQuantity() * innerMaterial.getUnitPrice());
+                    taskMaterialListModel.notifyChange(innerMaterial);
+                    materialDAO.saveOrUpdate(materialDAO.get(innerMaterial.getId()));
+                    isRemove = false;
+                }
+            }
+            if (!isRemove)
+                iterator.remove();
+        }
+    }
+
+    private void createNewWork(List<Work> workList) {
+        if (!workList.isEmpty()) {
+            for (Work work : workList) {
+                Work newWork = new Work();
+                newWork.setQuantity(work.getQuantity());
+                newWork.setUnitPrice(work.getUnitPrice());
+                newWork.setUnits(work.getUnits());
+                newWork.setAmount(work.getAmount());
+                newWork.setName(work.getName());
+                newWork.setTask(task);
+                taskWorkListModel.add(newWork);
+                workDAO.create(newWork);
+            }
+        }
+    }
+
+    private void createNewMaterial(List<Material> materialList) {
+        if (!materialList.isEmpty()) {
+            for (Material material : materialList) {
+                Material newMaterial = new Material();
+                newMaterial.setQuantity(material.getQuantity());
+                newMaterial.setUnitPrice(material.getUnitPrice());
+                newMaterial.setUnits(material.getUnits());
+                newMaterial.setAmount(material.getAmount());
+                newMaterial.setName(material.getName());
+                newMaterial.setTask(task);
+                taskMaterialListModel.add(newMaterial);
+                materialDAO.create(newMaterial);
+            }
+        }
     }
 
 }
+

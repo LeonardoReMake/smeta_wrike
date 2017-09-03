@@ -5,34 +5,34 @@
     <window id="wmWindow" title="Редактирование задачи" mode="modal" closable="true" width="100%"
             viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')">
         <hbox style="margin: 5px">
-            <vbox>
+            <vbox visible="@bind(!wmVM.fromTemplate)">
                 <button visible="@bind(!wmVM.canFromTemplate)" label="Добавить из шаблона" onClick="@command('findNewTemplate')"/>
                 <hbox visible="@bind(wmVM.canFromTemplate)">
-                    <combobox width="150px" model="@load(wmVM.templateWorkAndMaterialList)" autocomplete="true"
+                    <combobox width="150px" model="@load(wmVM.templateListModel)" autocomplete="true"
                               selectedItem="@bind(wmVM.template)">
                         <template name="model">
                             <comboitem label="@load(each.name)"/>
                         </template>
                     </combobox>
                     <hbox>
-                        <intbox format="#,##0" placeholder="Количество"></intbox>
-                        <button label="Добавить" onClick="@command('findTemplate', each=template)"/>
-                        <button label="Отменить" onClick="@command('findNewTemplate')"/>
+                        <intbox format="#,##0" placeholder="Количество" value="@bind(wmVM.countTemplate)"></intbox>
+                        <button label="Добавить" onClick="@command('findTemplate')"/>
+                        <button label="Отменить" onClick="@command('cancelFindingTemplate')"/>
                     </hbox>
                 </hbox>
             </vbox>
-            <vbox>
+            <vbox visible="@bind(!wmVM.toTemplate)">
                 <button label="Сохранить как шаблон" visible="@bind(!wmVM.canToTemplate)" onClick="@command('addNewTemplate')"/>
                 <hbox visible="@bind(wmVM.canToTemplate)">
                     <textbox value="@bind(wmVM.template.name)" placeholder="Имя шаблона"/>
                     <button label="Сохранить" onClick="@command('addTemplate')" />
-                    <button label="Отменить" onClick="@command('addNewTemplate')" />
+                    <button label="Отменить" onClick="@command('cancelAddingTemplate')" />
                 </hbox>
             </vbox>
         </hbox>
         <hbox>
             <vbox>
-                <grid model="@load(wmVM.workListModel))" width="100%" mold="paging" pageSize="60">
+                <grid model="@load(wmVM.taskWorkListModel))" width="100%" mold="paging" pageSize="60">
                     <columns>
                         <column hflex="7" label="Работа" align="center"></column>
                         <column hflex="3" label="Ед. изм." align="center"></column>
@@ -69,7 +69,7 @@
                 </grid>
             </vbox>
             <vbox>
-                <grid model="@bind(wmVM.materialListModel)" width="100%" mold="paging" pageSize="10">
+                <grid model="@bind(wmVM.taskMaterialListModel)" width="100%" mold="paging" pageSize="10">
                     <columns>
                         <column hflex="7" label="Материалы" align="center"></column>
                         <column hflex="3" label="Ед. изм." align="center"></column>

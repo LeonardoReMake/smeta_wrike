@@ -15,7 +15,7 @@ import java.util.List;
 public interface MaterialDAO extends Dao<Material, Long> {
 
     @Finder(query = "from Material where task = :task order by id")
-    List<Material> findByMaterials(@Named("task") Task task);
+    List<Material> findByTasks(@Named("task") Task task);
 
     @Finder(query = "from Material where template = :template order by id")
     List<Material> findByTemplate(@Named("template") Template template);

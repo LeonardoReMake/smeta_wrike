@@ -9,6 +9,7 @@ import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,10 +21,10 @@ public class Template extends LongIdPersistentEntity {
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "template")
-    private List<Work> workList;
+    private List<Work> workList = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "template")
-    private List<Material> materialList;
+    private List<Material> materialList = new ArrayList<>();
 
     public Template() {}
 

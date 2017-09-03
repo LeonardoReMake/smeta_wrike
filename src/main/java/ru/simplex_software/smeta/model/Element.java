@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
+import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
 
 
 @MappedSuperclass
@@ -26,6 +28,9 @@ public class Element extends LongIdPersistentEntity {
 
     /** Сумма. **/
     private Double amount;
+
+    @ManyToOne
+    private Task task;
 
     public Element(String name, String units, Double quantity, Double unitPrice, Double amount) {
         this.name = name;
@@ -76,6 +81,14 @@ public class Element extends LongIdPersistentEntity {
     public void setAmount(Double amount) {
         amount = unitPrice * quantity;
         this.amount = amount;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
     }
 
 }

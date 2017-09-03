@@ -75,7 +75,7 @@ public class WrikeLoaderService {
                                    "шт",
                                   3d,
                                  150d,
-                                  450d, task, null);
+                                  450d, null);
             task.getMaterials().add(material);
         }
     }
