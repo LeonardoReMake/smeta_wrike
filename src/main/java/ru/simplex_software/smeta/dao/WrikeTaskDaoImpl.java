@@ -1,10 +1,8 @@
 package ru.simplex_software.smeta.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import ru.simplex_software.smeta.model.Task;
-import ru.simplex_software.smeta.model.User;
 import ru.simplex_software.smeta.model.WrikeObject;
 
 import java.io.IOException;
