@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
@@ -49,8 +48,7 @@ public class Task extends LongIdPersistentEntity {
     private List<Material> materials = new ArrayList<>();
 
     /** Дата создания задачи. **/
-    @JsonFormat
-            (shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime createdDate;
 
     /** Название города. **/
@@ -185,4 +183,5 @@ public class Task extends LongIdPersistentEntity {
     public void setParentIds(List<String> parentIds) {
         this.parentIds = parentIds;
     }
+
 }

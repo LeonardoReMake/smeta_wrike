@@ -6,8 +6,6 @@ import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToMany;
-
 
 @MappedSuperclass
 public class Element extends LongIdPersistentEntity {

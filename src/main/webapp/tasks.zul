@@ -31,7 +31,7 @@
                 </listitem>
             </template>
         </listbox>
-        <button label="Отчёт (Excel или Pdf)" onClick="@command('getReport')"/>
+        <button label="Отчёт (Excel или Pdf)" onClick="@command('createReport')"/>
     </window>
 
 </zk>

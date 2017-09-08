@@ -10,11 +10,18 @@ import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zul.ListModelList;
 import ru.simplex_software.smeta.WrikeLoaderService;
+import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
+import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.excel.ReportCreator;
+import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.model.Work;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,12 +34,17 @@ public class TaskViewModel {
     private TaskDAO taskDAO;
 
     @WireVariable
+    private WorkDAO workDAO;
+
+    @WireVariable
+    private MaterialDAO materialDAO;
+
+    @WireVariable
     private WrikeLoaderService wrikeLoaderService;
 
     private ListModelList<Task> taskListModel;
 
-    public TaskViewModel() {
-    }
+    public TaskViewModel() {}
 
     public ListModelList<Task> getTaskListModel() {
         return taskListModel;
@@ -44,7 +56,6 @@ public class TaskViewModel {
 
     @Init
     public void init() {
-        wrikeLoaderService.loadNewTasks();
         List<Task> taskList = taskDAO.findAllTasks();
         for (Task task : taskList) {
             task.setFilled(!(task.getWorks().isEmpty() &&
@@ -63,8 +74,77 @@ public class TaskViewModel {
     }
 
     @Command
-    public void getReport(){
-        new ReportCreator().addReport();
+    /* создаем отсчет */
+    public void createReport() throws IOException {
+
+        final List<Long> totalAmountListOfWorks = new ArrayList<>();
+        final List<Long> totalAmountListOfMaterials = new ArrayList<>();
+
+        final ReportCreator reportCreator = new ReportCreator();
+
+        final int startColumnOfWork = 0;
+        final int startColumnOfMaterial = 5;
+
+        long amountTotalForWorks = 0;
+        long amountTotalForMaterials = 0;
+
+        reportCreator.addFields();
+
+        for (Task task : taskDAO.findAllTasks()) {
+            reportCreator.setTask(task);
+
+            Iterator<Work> workIterator = workDAO.findByTask(task).iterator();
+            Iterator<Material> materialIterator = materialDAO.findByTasks(task).iterator();
+
+            while (workIterator.hasNext() && materialIterator.hasNext()) {
+
+                amountTotalForWorks = 0;
+                amountTotalForMaterials = 0;
+
+                Material material = materialIterator.next();
+                Work work = workIterator.next();
+
+                reportCreator.setWorkOrMaterial(work);
+                reportCreator.setWorkOrMaterial(material);
+
+                amountTotalForWorks += work.getAmount();
+                amountTotalForMaterials += material.getAmount();
+                reportCreator.newRow();
+                reportCreator.setIndexColumn(startColumnOfWork);
+                reportCreator.setTotalAmountForWorks(amountTotalForWorks);
+                reportCreator.setIndexColumn(2 * startColumnOfMaterial - 1);
+                reportCreator.setTotalAmountForMaterials(amountTotalForMaterials);
+                reportCreator.newRow();
+            }
+
+
+            totalAmountListOfWorks.add(amountTotalForWorks);
+            totalAmountListOfMaterials.add(amountTotalForMaterials);
+
+        }
+
+        reportCreator.newRow();
+
+        reportCreator.setTotalAmountAllElements(totalAmountListOfWorks, "Всего работы: ");
+        long totalAmountOfWorks = reportCreator.getTotalAmountAllElements();
+
+        reportCreator.setIndexColumn(startColumnOfMaterial);
+        long totalAmountOfMaterials = reportCreator.getTotalAmountAllElements();
+
+        reportCreator.newRow();
+
+        reportCreator.setTotalAmountAllElements(totalAmountListOfWorks, "Всего материалы: ");
+
+        reportCreator.newRow();
+        long totalAmounts = totalAmountOfWorks + totalAmountOfMaterials;
+        reportCreator.allAmountOfEstimate(totalAmountOfWorks + totalAmountOfMaterials);
+
+        reportCreator.newRow();
+        reportCreator.allOnEstimate(totalAmounts);
+        reportCreator.newRow();
+        reportCreator.setFooterEstimate();
+
+        reportCreator.build();
     }
 
 }

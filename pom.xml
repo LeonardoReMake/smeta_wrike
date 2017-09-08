@@ -15,7 +15,6 @@
   </organization>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>4.3.10.RELEASE</spring.version>
     <springsecurity.version>4.2.3.RELEASE</springsecurity.version>
     <zk.version>8.0.2.2</zk.version>
@@ -27,11 +26,13 @@
 
   <dependencies>
 
+    <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>3.16</version>
     </dependency>
+
 
     <!--SPRING FRAMEWORK-->
     <dependency>
@@ -176,14 +177,6 @@
       <groupId>org.zkoss.zk</groupId>
       <artifactId>zul</artifactId>
       <version>${zk.version}</version>
-
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-jdk14</artifactId>
-        </exclusion>
-      </exclusions>
-
     </dependency>
 
     <dependency>
@@ -220,7 +213,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <version>1.1.3</version>
     </dependency>
 
     <dependency>
@@ -232,6 +225,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
 
@@ -330,10 +329,8 @@
 
 
   <build>
-
     <finalName>smeta</finalName>
     <sourceDirectory>src/main/java</sourceDirectory>
-
     <resources>
       <resource>
         <filtering>false</filtering>
@@ -344,14 +341,12 @@
         <directory>src/profiles/${profile.selected}</directory>
       </resource>
     </resources>
-
     <testResources>
       <testResource>
         <filtering>false</filtering>
         <directory>src/test/resources</directory>
       </testResource>
     </testResources>
-
     <plugins>
       <plugin>
         <inherited>true</inherited>
@@ -380,7 +375,6 @@
         </configuration>
       </plugin>
     </plugins>
-
   </build>
 
   <profiles>

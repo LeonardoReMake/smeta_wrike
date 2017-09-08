@@ -10,7 +10,7 @@ import java.util.List;
 @AutoDAO
 public interface TaskDAO extends Dao<Task, Long> {
 
-    @Finder(query = "from Task order by createdDate desc")
+    @Finder(query = "from Task")
     List<Task> findAllTasks();
 
 }
