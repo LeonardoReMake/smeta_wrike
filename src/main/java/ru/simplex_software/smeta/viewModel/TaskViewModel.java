@@ -1,5 +1,6 @@
 package ru.simplex_software.smeta.viewModel;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.BindingParam;
@@ -14,14 +15,10 @@ import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.excel.ReportCreator;
-import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
-import ru.simplex_software.smeta.model.Work;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -73,78 +70,18 @@ public class TaskViewModel {
         Executions.createComponents("/dialog.zul", null, tasksMap);
     }
 
-    @Command
     /* создаем отсчет */
-    public void createReport() throws IOException {
+    @Command
+    public void createReport() throws IOException, InvalidFormatException {
 
-        final List<Long> totalAmountListOfWorks = new ArrayList<>();
-        final List<Long> totalAmountListOfMaterials = new ArrayList<>();
+        final List<Task> tasks = taskDAO.findAllTasks();
 
-        final ReportCreator reportCreator = new ReportCreator();
+        ReportCreator reportCreator = new ReportCreator();
 
-        final int startColumnOfWork = 0;
-        final int startColumnOfMaterial = 5;
+        reportCreator.copyFromTemplateHeader();
 
-        long amountTotalForWorks = 0;
-        long amountTotalForMaterials = 0;
-
-        reportCreator.addFields();
-
-        for (Task task : taskDAO.findAllTasks()) {
-            reportCreator.setTask(task);
-
-            Iterator<Work> workIterator = workDAO.findByTask(task).iterator();
-            Iterator<Material> materialIterator = materialDAO.findByTasks(task).iterator();
-
-            while (workIterator.hasNext() && materialIterator.hasNext()) {
-
-                amountTotalForWorks = 0;
-                amountTotalForMaterials = 0;
-
-                Material material = materialIterator.next();
-                Work work = workIterator.next();
-
-                reportCreator.setWorkOrMaterial(work);
-                reportCreator.setWorkOrMaterial(material);
-
-                amountTotalForWorks += work.getAmount();
-                amountTotalForMaterials += material.getAmount();
-                reportCreator.newRow();
-                reportCreator.setIndexColumn(startColumnOfWork);
-                reportCreator.setTotalAmountForWorks(amountTotalForWorks);
-                reportCreator.setIndexColumn(2 * startColumnOfMaterial - 1);
-                reportCreator.setTotalAmountForMaterials(amountTotalForMaterials);
-                reportCreator.newRow();
-            }
-
-
-            totalAmountListOfWorks.add(amountTotalForWorks);
-            totalAmountListOfMaterials.add(amountTotalForMaterials);
-
-        }
-
-        reportCreator.newRow();
-
-        reportCreator.setTotalAmountAllElements(totalAmountListOfWorks, "Всего работы: ");
-        long totalAmountOfWorks = reportCreator.getTotalAmountAllElements();
-
-        reportCreator.setIndexColumn(startColumnOfMaterial);
-        long totalAmountOfMaterials = reportCreator.getTotalAmountAllElements();
-
-        reportCreator.newRow();
-
-        reportCreator.setTotalAmountAllElements(totalAmountListOfWorks, "Всего материалы: ");
-
-        reportCreator.newRow();
-        long totalAmounts = totalAmountOfWorks + totalAmountOfMaterials;
-        reportCreator.allAmountOfEstimate(totalAmountOfWorks + totalAmountOfMaterials);
-
-        reportCreator.newRow();
-        reportCreator.allOnEstimate(totalAmounts);
-        reportCreator.newRow();
-        reportCreator.setFooterEstimate();
-
-        reportCreator.build();
+        reportCreator.copyFromTemplateTask(tasks);
+        reportCreator.close();
     }
 
 }
