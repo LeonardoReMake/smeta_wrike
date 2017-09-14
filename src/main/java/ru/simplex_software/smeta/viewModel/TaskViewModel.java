@@ -78,10 +78,11 @@ public class TaskViewModel {
 
         ReportCreator reportCreator = new ReportCreator();
 
+        reportCreator.copyFromTemplateTask(tasks);
+        reportCreator.copyFromTemplateFooter();
         reportCreator.copyFromTemplateHeader();
 
-        reportCreator.copyFromTemplateTask(tasks);
-        reportCreator.close();
+        reportCreator.write();
     }
 
 }
