@@ -17,9 +17,8 @@ import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,7 +113,7 @@ public class ReportCreator {
                 row = sheet.createRow(workRowPosition);
                 tRow = tSheet.getRow(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK);
                 copyRowStyle(tRow, row);
-                createTaskElementCell(row, ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, "Итого");
+                createTaskElementCell(row, ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, ConstantsOfReport.TOTAL);
                 createTaskElementCell(row, ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK, String.valueOf(worksAmount));
             }
 
@@ -147,7 +146,7 @@ public class ReportCreator {
                 tRow = tSheet.getRow(ConstantsOfReport.TOTAL_NUM_ROW_AMOUNT_FOR_ELEMENT);
                 copyRowStyle(tRow, row);
                 createTaskElementCell(row,ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK +
-                                             ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, "Итого");
+                                             ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, ConstantsOfReport.TOTAL);
                 createTaskElementCell(row, ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE, String.valueOf(materialsAmount));
             }
 
@@ -221,13 +220,8 @@ public class ReportCreator {
         cell.setCellValue(value);
     }
 
-    public void write() {
-        FileOutputStream fileOut = null;
-        try {
-            fileOut = new FileOutputStream("workbook.xls");
-        } catch (FileNotFoundException e) {
-            LOG.error(e.getMessage(), e);
-        }
+    public void write(OutputStream fileOut) {
+
         try {
             wb.write(fileOut);
         } catch (IOException e) {

@@ -96,6 +96,17 @@
     -->
     <load-on-startup>1</load-on-startup><!-- Must -->
   </servlet>
+
+  <servlet>
+    <servlet-name>reportServlet</servlet-name>
+    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>reportServlet</servlet-name>
+    <url-pattern>/ReportXlsx</url-pattern>
+  </servlet-mapping>
+
   <servlet-mapping>
     <servlet-name>zkLoader</servlet-name>
     <url-pattern>*.zul</url-pattern>

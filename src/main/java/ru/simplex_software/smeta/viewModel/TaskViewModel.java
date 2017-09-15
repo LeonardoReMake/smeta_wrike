@@ -1,6 +1,5 @@
 package ru.simplex_software.smeta.viewModel;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.BindingParam;
@@ -14,10 +13,8 @@ import ru.simplex_software.smeta.WrikeLoaderService;
 import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
-import ru.simplex_software.smeta.excel.ReportCreator;
 import ru.simplex_software.smeta.model.Task;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,21 +65,6 @@ public class TaskViewModel {
         tasksMap.put("task", task);
 
         Executions.createComponents("/dialog.zul", null, tasksMap);
-    }
-
-    /* создаем отсчет */
-    @Command
-    public void createReport() throws IOException, InvalidFormatException {
-
-        final List<Task> tasks = taskDAO.findAllTasks();
-
-        ReportCreator reportCreator = new ReportCreator();
-
-        reportCreator.copyFromTemplateTask(tasks);
-        reportCreator.copyFromTemplateFooter();
-        reportCreator.copyFromTemplateHeader();
-
-        reportCreator.write();
     }
 
 }
