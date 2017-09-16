@@ -16,6 +16,8 @@
     <context:component-scan base-package="ru.simplex_software.smeta" />
     <dao:hibernateScan base-package="ru.simplex_software.smeta.dao" />
 
+    <import resource="profileContext.xml"/>
+
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
     <bean id="transactionFilter" class="ru.simplex_software.smeta.security.TransactionFilter" />
@@ -40,7 +42,7 @@
         <property name="maxPoolSize" value="40" />
     </bean>
 
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"  depends-on="flyway">
 
         <property name="dataSource" ref="dataSource" />
         <property name="packagesToScan">

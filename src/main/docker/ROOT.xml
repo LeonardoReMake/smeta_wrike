@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resource name="jdbc/schoolDB"
+              global="jdbc/schoolDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="org.postgresql.Driver"
+              url="jdbc:postgresql://school-postgres:5432/postgres"
+              username="postgres"
+              password="Eeph3koo"
+              maxActive="100"
+              maxIdle="20"
+              minIdle="5"
+              maxWait="10000"/>
+</Context>
+
+
