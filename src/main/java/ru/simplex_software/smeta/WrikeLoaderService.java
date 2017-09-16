@@ -49,9 +49,9 @@ public class WrikeLoaderService {
             for (Task task : newTasks) {
                 parseTaskTitle(task);
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
+                taskDAO.saveOrUpdate(task);
                 createNewWorks(task);
                 createNewMaterials(task);
-                taskDAO.saveOrUpdate(task);
             }
         } else {
             LOG.info("No new tasks");
@@ -60,23 +60,29 @@ public class WrikeLoaderService {
 
     public void createNewWorks(Task task) {
         for (int i = 0; i < 5; i++) {
-            Work work = new Work("Замена замка мебельного",
-                                  "шт",
-                                 3d,
-                                150d,
-                                 450d, null);
-            task.getWorks().add(work);
+            final Work work = new Work();
+            work.setName("Замена замка мебельного");
+            work.setUnits("шт");
+            work.setQuantity(3d);
+            work.setUnitPrice(150d);
+            work.setAmount(450d);
+            work.setTask(task);
+
+            workDAO.saveOrUpdate(work);
         }
     }
 
     public void createNewMaterials(Task task) {
         for (int i = 0; i < 5; i++) {
-            Material material = new Material("Замена замка мебельного",
-                                   "шт",
-                                  3d,
-                                 150d,
-                                  450d, null);
-            task.getMaterials().add(material);
+            final Material material = new Material();
+            material.setName("Замена замка мебельного");
+            material.setUnits("шт");
+            material.setQuantity(3d);
+            material.setUnitPrice(150d);
+            material.setAmount(450d);
+            material.setTask(task);
+
+            materialDAO.saveOrUpdate(material);
         }
     }
 

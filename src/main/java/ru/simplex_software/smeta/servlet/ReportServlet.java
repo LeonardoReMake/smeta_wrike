@@ -30,7 +30,7 @@ public class ReportServlet implements HttpRequestHandler {
         final ReportCreator reportCreator = new ReportCreator();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=workbook.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=report.xlsx");
 
         ServletOutputStream outputStream = response.getOutputStream();
 

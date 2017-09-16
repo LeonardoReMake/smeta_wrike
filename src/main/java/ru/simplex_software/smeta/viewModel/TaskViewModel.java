@@ -13,6 +13,7 @@ import ru.simplex_software.smeta.WrikeLoaderService;
 import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
+import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
 import ru.simplex_software.smeta.model.Task;
 
 import java.util.HashMap;
@@ -32,6 +33,9 @@ public class TaskViewModel {
 
     @WireVariable
     private MaterialDAO materialDAO;
+
+    @WireVariable
+    private WrikeTaskDaoImpl wrikeTaskDao;
 
     @WireVariable
     private WrikeLoaderService wrikeLoaderService;
@@ -56,6 +60,12 @@ public class TaskViewModel {
                              task.getMaterials().isEmpty()));
         }
         taskListModel = new ListModelList<>(taskList);
+    }
+
+    @Command
+    public void loadNewTasks() {
+        final List<Task> taskList = taskDAO.findAllTasks();
+        wrikeLoaderService.loadNewTasks();
     }
 
     @Command

@@ -10,6 +10,8 @@ public class WrikeObject {
 
     private List<Task> data = new ArrayList<Task>();
 
+    public WrikeObject() {}
+
     public String getKind() {
         return kind;
     }

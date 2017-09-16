@@ -32,6 +32,7 @@
             </template>
         </listbox>
         <button label="Отчёт (Excel или Pdf)" href="/ReportXlsx"/>
+        <button label="Загрузить новые задачи" onClick="@command('loadNewTasks')"/>
     </window>
 
 </zk>

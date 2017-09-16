@@ -43,24 +43,16 @@ public class ReportCreator {
     public ReportCreator() {
         wb = new XSSFWorkbook();
         sheet = wb.createSheet();
+        sheet.setDisplayGridlines(false);
     }
 
     public void copyFromTemplateHeader() throws InvalidFormatException {
-        template = getTemplateHeader();
-        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
-        for (rowI = 0; rowI < ConstantsOfReport.COUNT_ROWS_HEADER; rowI++) {
-            Row row = sheet.createRow(rowI);
-            Row tRow = tSheet.getRow(rowI);
-            copyRowStyle(tRow, row);
-            for (int cellI = 0; cellI < ConstantsOfReport.COUNT_CELLS_ESTIMATE; cellI++) {
-                sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
-                Cell tCell = tRow.getCell(cellI);
-                Cell cell = row.createCell(cellI);
-                copyCell(tCell, cell);
-            }
-        }
+        copyStylesOfElement(getTemplateHeader(), 0, ConstantsOfReport.COUNT_ROWS_HEADER,
+                            0, ConstantsOfReport.COUNT_CELLS_ESTIMATE, 0, true);
         Row row = sheet.getRow(ConstantsOfReport.ROW_NUM_AMOUNT_HEADER);
         Cell cell = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_HEADER);
+
+        cell.setCellType(CellType.NUMERIC);
         cell.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + "р.");
     }
 
@@ -73,91 +65,204 @@ public class ReportCreator {
         int workRowPosition;
         int materialRowPosition;
 
-        for (final Task task : tasks) {
-
+        for (Task task : tasks) {
             double worksAmount = 0;
             double materialsAmount = 0;
 
             Row row = sheet.createRow(freeRowPosition);
-            Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
-            copyRowStyle(tRow, row);
+            Row tRow = tSheet.getRow(0);
 
             sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
-                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                                                        ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                        ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
-            Cell cellTask = row.createCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
-            cellTask.setCellValue(task.getName());
             Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
-            copyCell(tCell, cellTask);
+
+            createOneTaskFromTemplate(row, tRow, task, tCell);
 
             workRowPosition = freeRowPosition;
             materialRowPosition = freeRowPosition;
 
-            for(Work work : task.getWorks()) {
-                double workAmount = work.getAmount();
-                row = sheet.createRow(workRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
-                copyRowStyle(tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK), row);
-                createTaskElementCell(row,1, work.getName());
-                createTaskElementCell(row, 2, work.getUnits());
-                createTaskElementCell(row, 3, String.valueOf(work.getQuantity()));
-                createTaskElementCell(row, 4, String.valueOf(work.getUnitPrice()));
-                createTaskElementCell(row, 5, String.valueOf(workAmount));
-                worksAmount += workAmount;
-                workRowPosition++;
-            }
+            createWorks(task, row, workRowPosition, worksAmount);
             workAmountList.add(worksAmount);
             workRowPosition++;
+            createAmountForWorks(workRowPosition, row, tRow, tSheet, tCell, worksAmount);
 
-            if (workRowPosition > freeRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK) {
-                row = sheet.createRow(workRowPosition);
-                tRow = tSheet.getRow(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK);
-                copyRowStyle(tRow, row);
-                createTaskElementCell(row, ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, ConstantsOfReport.TOTAL);
-                createTaskElementCell(row, ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK, String.valueOf(worksAmount));
-            }
-
-            for(Material material : task.getMaterials()) {
-                double materialAmount = material.getAmount();
-                if (materialRowPosition > workRowPosition) {
-                    row = sheet.createRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
-                } else {
-                    row = sheet.getRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
-                }
-                copyRowStyle(tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK), row);
-                createTaskElementCell(row,6, material.getName());
-                createTaskElementCell(row, 7, material.getUnits());
-                createTaskElementCell(row, 8, String.valueOf(material.getQuantity()));
-                createTaskElementCell(row, 9, String.valueOf(material.getUnitPrice()));
-                createTaskElementCell(row, 10, String.valueOf(materialAmount));
-                materialsAmount += materialAmount;
-                materialRowPosition++;
-            }
+            createMaterials(task, row, materialRowPosition, workRowPosition, materialsAmount);
             materialAmountList.add(materialsAmount);
             materialRowPosition++;
+            createAmountForMaterials(materialRowPosition, workRowPosition, row, tRow, tSheet, tCell, materialsAmount);
 
-            if (materialRowPosition > freeRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK) {
-                if (materialRowPosition > workRowPosition) {
-                    row = sheet.createRow(materialRowPosition);
-                } else {
-                    row = sheet.getRow(materialRowPosition);
-                }
-
-                tRow = tSheet.getRow(ConstantsOfReport.TOTAL_NUM_ROW_AMOUNT_FOR_ELEMENT);
-                copyRowStyle(tRow, row);
-                createTaskElementCell(row,ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK +
-                                             ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, ConstantsOfReport.TOTAL);
-                createTaskElementCell(row, ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE, String.valueOf(materialsAmount));
-            }
-
-            if (workRowPosition < materialRowPosition) {
-                freeRowPosition = materialRowPosition;
-            } else {
-                freeRowPosition = workRowPosition;
-            }
+            matchingRowPosition(workRowPosition, materialRowPosition);
 
             freeRowPosition++;
         }
+
+    }
+
+    public void copyFromTemplateFooter() throws InvalidFormatException {
+        final int rowPositionOfEstimate = 5;
+        final int maxRowPositionOfFooter = 16;
+
+        copyStylesOfElement(getTemplateFooter(), freeRowPosition,
+                    freeRowPosition + maxRowPositionOfFooter, 0,
+                            ConstantsOfReport.COUNT_CELLS_ESTIMATE,
+                            freeRowPosition, false);
+
+        double amountWorks = getAmountOfElements(workAmountList);
+        double amountMaterials = getAmountOfElements(materialAmountList);
+
+        Row row = sheet.getRow(freeRowPosition + ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
+
+        Cell cellAmountOfWorks = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK);
+        cellAmountOfWorks.setCellType(CellType.NUMERIC);
+        cellAmountOfWorks.setCellValue(String.valueOf(amountWorks));
+
+        Cell cellAmountOfMaterials = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
+        cellAmountOfMaterials.setCellType(CellType.NUMERIC);
+        cellAmountOfMaterials.setCellValue(String.valueOf(amountMaterials));
+
+        double amountOfEstimate = amountMaterials + amountWorks;
+
+        row = sheet.getRow(freeRowPosition + rowPositionOfEstimate);
+
+        Cell cellAmountOfEstimate = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
+        cellAmountOfEstimate.setCellType(CellType.NUMERIC);
+        cellAmountOfEstimate.setCellValue(String.valueOf(amountOfEstimate));
+
+    }
+
+    public void write(OutputStream fileOut) {
+        try {
+            wb.write(fileOut);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+
+        try {
+            fileOut.close();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    private void matchingRowPosition(int workRowPosition, int materialRowPosition) {
+        if (workRowPosition < materialRowPosition) {
+            freeRowPosition = materialRowPosition;
+        } else {
+            freeRowPosition = workRowPosition;
+        }
+
+    }
+
+    private void createAmountForWorks(int workRowPosition, Row row, Row tRow, Sheet tSheet,
+                                      Cell tCell, double worksAmount) {
+        if (workRowPosition > freeRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK) {
+            final int cellStart = 0;
+            final int cellEnd = 6;
+            final double numericCell = 5;
+
+            row = sheet.createRow(workRowPosition);
+            tRow = tSheet.getRow(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK);
+            copyStylesForElements(cellStart, cellEnd, tRow,
+                    row, tCell, numericCell, worksAmount, tSheet);
+        }
+    }
+
+    private void createAmountForMaterials(int materialRowPosition, int workRowPosition, Row row, Row tRow, Sheet tSheet,
+                                            Cell tCell, double materialsAmount) {
+        if (materialRowPosition > freeRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK) {
+            final int cellStart = 6;
+            final int cellEnd = 11;
+            final double numericCell = 10;
+
+            if (materialRowPosition > workRowPosition) {
+                row = sheet.createRow(materialRowPosition);
+            } else {
+                row = sheet.getRow(materialRowPosition);
+            }
+            copyStylesForElements(cellStart, cellEnd, tRow,
+                    row, tCell, numericCell, materialsAmount, tSheet);
+
+        }
+    }
+
+    private void createOneTaskFromTemplate(Row row, Row tRow, Task task, Cell tCell) {
+        Cell cellTask = row.createCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
+        tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
+        copyCell(tCell, cellTask);
+        cellTask.setCellValue(task.getName());
+    }
+
+    private void createWorks(Task task, Row row, int workRowPosition, double worksAmount) {
+        for (Work work : task.getWorks()) {
+            double workAmount = work.getAmount();
+            row = sheet.createRow(workRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+            createTaskElementCell(row, 1, work.getName());
+            createTaskElementCell(row, 2, work.getUnits());
+            createTaskElementCell(row, 3, String.valueOf(work.getQuantity()));
+            createTaskElementCell(row, 4, String.valueOf(work.getUnitPrice()));
+            createTaskElementCell(row, 5, String.valueOf(workAmount));
+
+            worksAmount += workAmount;
+            workRowPosition++;
+        }
+    }
+
+    private void createMaterials(Task task, Row row, int materialRowPosition,
+                                                     int workRowPosition, double materialsAmount) {
+        for(Material material : task.getMaterials()) {
+            double materialAmount = material.getAmount();
+            if (materialRowPosition > workRowPosition) {
+                row = sheet.createRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+            } else {
+                row = sheet.getRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+            }
+            createTaskElementCell(row,6, material.getName());
+            createTaskElementCell(row, 7, material.getUnits());
+            createTaskElementCell(row, 8, String.valueOf(material.getQuantity()));
+            createTaskElementCell(row, 9, String.valueOf(material.getUnitPrice()));
+            createTaskElementCell(row, 10, String.valueOf(materialAmount));
+            materialsAmount += materialAmount;
+            materialRowPosition++;
+        }
+    }
+
+    private void copyStylesForElements(int cellStart, int cellEnd, Row tRow,
+                                       Row row, Cell tCell, double numericCell, double worksAmount, Sheet tSheet) {
+        for (int cellI = cellStart; cellI < cellEnd; cellI++) {
+            sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
+            if (tRow != null) {
+                tCell = tRow.getCell(cellI);
+            }
+
+            Cell cell = row.createCell(cellI);
+            copyCell(tCell, cell);
+            if (cellI == numericCell) {
+                cell.setCellType(CellType.NUMERIC);
+                cell.setCellValue(worksAmount);
+            }
+        }
+    }
+
+    private void copyStylesOfElement(Workbook template, int startRow, int endRow,
+                                     int startCell, int endCell, int rowShift, boolean isHeader) {
+        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
+        for (rowI = startRow; rowI < endRow; rowI++) {
+            Row row = sheet.createRow(rowI);
+            Row tRow = tSheet.getRow(rowI - rowShift);
+            if (rowI == ConstantsOfReport.COUNT_ROWS_HEADER - 1 && isHeader)
+                copyRowStyle(tRow, row);
+            for (int cellI = startCell; cellI < endCell; cellI++) {
+                sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
+                Cell tCell = null;
+                if (tRow != null)
+                    tCell = tRow.getCell(cellI);
+                Cell cell = row.createCell(cellI);
+                copyCell(tCell, cell);
+            }
+        }
+
     }
 
     private double getAmountsOfEstimate(List<Double> worksAmount, List<Double> materialsAmount) {
@@ -173,66 +278,12 @@ public class ReportCreator {
         return amountElements;
     }
 
-    public void copyFromTemplateFooter() throws InvalidFormatException {
-        final int rowPositionOfEstimate = 5;
-        final int maxRowPositionOfFooter = 16;
-        template = getTemplateFooter();
-        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
-
-        for (rowI = freeRowPosition + ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK; rowI < freeRowPosition + maxRowPositionOfFooter; rowI++) {
-            Row row = sheet.createRow(rowI);
-            Row tRow = tSheet.getRow(rowI - (freeRowPosition + ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK));
-            if (tRow != null) {
-                copyRowStyle(tRow, row);
-                for (int cellI = 0; cellI < ConstantsOfReport.COUNT_CELLS_ESTIMATE; cellI++) {
-                    sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
-                    Cell tCell = tRow.getCell(cellI);
-                    Cell cell = row.createCell(cellI);
-                    copyCell(tCell, cell);
-                }
-            }
-        }
-
-        double amountWorks = getAmountOfElements(workAmountList);
-        double amountMaterials = getAmountOfElements(materialAmountList);
-
-        Row row = sheet.getRow(freeRowPosition + ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
-
-        Cell cellAmountOfWorks = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK);
-        cellAmountOfWorks.setCellValue(String.valueOf(amountWorks));
-
-        Cell cellAmountOfMaterials = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
-        cellAmountOfMaterials.setCellValue(String.valueOf(amountMaterials));
-
-        double amountOfEstimate = amountMaterials + amountWorks;
-
-        row = sheet.getRow(freeRowPosition + rowPositionOfEstimate);
-
-        Cell cellAmountOfEstimate = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
-        cellAmountOfEstimate.setCellValue(String.valueOf(amountOfEstimate));
-
-    }
-
-    public void createTaskElementCell(Row row, int i, String value){
+    private Cell createTaskElementCell(Row row, int i, String value){
         Cell cell = row.createCell(i);
         Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         copyCell(tSheet.getRow(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK).getCell(i), cell);
         cell.setCellValue(value);
-    }
-
-    public void write(OutputStream fileOut) {
-
-        try {
-            wb.write(fileOut);
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-
-        try {
-            fileOut.close();
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
+        return cell;
     }
 
     private Workbook getTemplateHeader() {
@@ -280,11 +331,12 @@ public class ReportCreator {
             if (from.getCellTypeEnum().equals(CellType.STRING)) {
                 to.setCellType(CellType.STRING);
                 to.setCellValue(from.getStringCellValue());
-            }
-
-            if (from.getCellTypeEnum().equals(CellType.FORMULA)) {
+            } else if (from.getCellTypeEnum().equals(CellType.FORMULA)) {
                 to.setCellType(CellType.FORMULA);
                 to.setCellValue(from.getCellFormula());
+            } else if (from.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                to.setCellType(CellType.NUMERIC);
+                to.setCellValue(from.getNumericCellValue());
             }
 
         }
