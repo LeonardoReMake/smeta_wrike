@@ -434,11 +434,51 @@
       </properties>
     </profile>
 
+
     <profile>
-      <id>production</id>
+      <id>testing</id>
       <properties>
-        <profile.selected>production</profile.selected>
+        <profile.selected>testing</profile.selected>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>42.1.1</version>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+          <version>3.2.1</version>
+        </dependency>
+
+      </dependencies>
+      <build>
+        <finalName>ROOT</finalName>
+      </build>
+    </profile>
+
+    <profile>
+      <id>docker</id>
+      <properties>
+        <profile.selected>docker</profile.selected>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>42.1.1</version>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+          <version>3.2.1</version>
+        </dependency>
+
+      </dependencies>
+      <build>
+        <finalName>ROOT</finalName>
+      </build>
     </profile>
 
     <profile>
