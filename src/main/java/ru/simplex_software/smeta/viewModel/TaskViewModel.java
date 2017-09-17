@@ -40,7 +40,7 @@ public class TaskViewModel {
     @WireVariable
     private WrikeLoaderService wrikeLoaderService;
 
-    private ListModelList<Task> taskListModel;
+    private ListModelList<Task> taskListModel = new ListModelList<>();
 
     public TaskViewModel() {}
 
@@ -64,8 +64,11 @@ public class TaskViewModel {
 
     @Command
     public void loadNewTasks() {
-        final List<Task> taskList = taskDAO.findAllTasks();
         wrikeLoaderService.loadNewTasks();
+
+        final List<Task> taskList = taskDAO.findAllTasks();
+        taskListModel.clear();
+        taskListModel.addAll(taskList);
     }
 
     @Command

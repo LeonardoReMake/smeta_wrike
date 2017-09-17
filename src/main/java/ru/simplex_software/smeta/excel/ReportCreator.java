@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ReportCreator {
@@ -47,13 +48,61 @@ public class ReportCreator {
     }
 
     public void copyFromTemplateHeader() throws InvalidFormatException {
-        copyStylesOfElement(getTemplateHeader(), 0, ConstantsOfReport.COUNT_ROWS_HEADER,
-                            0, ConstantsOfReport.COUNT_CELLS_ESTIMATE, 0, true);
-        Row row = sheet.getRow(ConstantsOfReport.ROW_NUM_AMOUNT_HEADER);
-        Cell cell = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_HEADER);
+        int numberNumber = 0;
+        int numberOfReport = 0;
+        Date dateOfReport = null;
 
-        cell.setCellType(CellType.NUMERIC);
-        cell.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + "р.");
+        double simpleVAT = 0d;
+        double estimateWithVAT = 0d;
+
+        Date dateBegin = null;
+        Date dateEnd = null;
+
+        final String contract = " к Договору подряда №" + numberOfReport + " от "  + dateOfReport;
+        final String localCalculation = "Локальный сметный расчет №" + numberNumber + contract;
+        final String estimatePeriod = "Отчетный период с " + dateBegin + " июня 2017г. по " + dateEnd
+                                        + " июня 2017г.";
+
+        copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
+                ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
+                ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
+
+        final Cell cellEstimateAmount = addCellType(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        cellEstimateAmount.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + "р.");
+
+        final Cell cellContract = addCellType(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
+                                              ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                              CellType.STRING);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK,
+                                                    ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK,
+                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+        cellContract.setCellValue(contract);
+
+        final Cell cellLocalEstimate = addCellType(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
+                                                   ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
+                                                    ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
+                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+        cellLocalEstimate.setCellValue(localCalculation);
+
+        final Cell cellEstimatePeriod = addCellType(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                                                    ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+        cellEstimatePeriod.setCellValue(estimatePeriod);
+
+        final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
+                                         ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        cellVAT.setCellValue(simpleVAT + "р.");
+
+        final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
+                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        cellEstimateWithVAT.setCellValue(estimateWithVAT + "р.");
     }
 
     public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
@@ -70,13 +119,13 @@ public class ReportCreator {
             double materialsAmount = 0;
 
             Row row = sheet.createRow(freeRowPosition);
-            Row tRow = tSheet.getRow(0);
+            Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
 
             sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
                                                         ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
                                                         ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
-            Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
+            final Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
 
             createOneTaskFromTemplate(row, tRow, task, tCell);
 
@@ -84,12 +133,10 @@ public class ReportCreator {
             materialRowPosition = freeRowPosition;
 
             createWorks(task, row, workRowPosition, worksAmount);
-            workAmountList.add(worksAmount);
             workRowPosition++;
             createAmountForWorks(workRowPosition, row, tRow, tSheet, tCell, worksAmount);
 
             createMaterials(task, row, materialRowPosition, workRowPosition, materialsAmount);
-            materialAmountList.add(materialsAmount);
             materialRowPosition++;
             createAmountForMaterials(materialRowPosition, workRowPosition, row, tRow, tSheet, tCell, materialsAmount);
 
@@ -97,37 +144,40 @@ public class ReportCreator {
 
             freeRowPosition++;
         }
-
     }
 
     public void copyFromTemplateFooter() throws InvalidFormatException {
-        final int rowPositionOfEstimate = 5;
+        final int rowPositionOfEstimate = 4;
         final int maxRowPositionOfFooter = 16;
 
         copyStylesOfElement(getTemplateFooter(), freeRowPosition,
-                    freeRowPosition + maxRowPositionOfFooter, 0,
+                    freeRowPosition + maxRowPositionOfFooter,
+                            ConstantsOfReport.INDEX_SHEET,
                             ConstantsOfReport.COUNT_CELLS_ESTIMATE,
                             freeRowPosition, false);
 
         double amountWorks = getAmountOfElements(workAmountList);
         double amountMaterials = getAmountOfElements(materialAmountList);
 
-        Row row = sheet.getRow(freeRowPosition + ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
+        Row row = sheet.getRow(freeRowPosition);
 
-        Cell cellAmountOfWorks = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK);
-        cellAmountOfWorks.setCellType(CellType.NUMERIC);
-        cellAmountOfWorks.setCellValue(String.valueOf(amountWorks));
+        final Cell cellAmountOfWorks = addCellType(row.getRowNum(),
+                                                   ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK,
+                                                   CellType.NUMERIC);
+        cellAmountOfWorks.setCellValue(amountWorks);
 
-        Cell cellAmountOfMaterials = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
-        cellAmountOfMaterials.setCellType(CellType.NUMERIC);
-        cellAmountOfMaterials.setCellValue(String.valueOf(amountMaterials));
+        final Cell cellAmountOfMaterials = addCellType(row.getRowNum(),
+                                                       ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                       CellType.NUMERIC);
+        cellAmountOfMaterials.setCellValue(amountMaterials);
 
         double amountOfEstimate = amountMaterials + amountWorks;
 
         row = sheet.getRow(freeRowPosition + rowPositionOfEstimate);
 
-        Cell cellAmountOfEstimate = row.getCell(ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE);
-        cellAmountOfEstimate.setCellType(CellType.NUMERIC);
+        final Cell cellAmountOfEstimate = addCellType(row.getRowNum(),
+                                                      ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                      CellType.NUMERIC);
         cellAmountOfEstimate.setCellValue(String.valueOf(amountOfEstimate));
 
     }
@@ -165,7 +215,7 @@ public class ReportCreator {
             row = sheet.createRow(workRowPosition);
             tRow = tSheet.getRow(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK);
             copyStylesForElements(cellStart, cellEnd, tRow,
-                    row, tCell, numericCell, worksAmount, tSheet);
+                                  row, tCell, numericCell, worksAmount, tSheet);
         }
     }
 
@@ -207,6 +257,7 @@ public class ReportCreator {
             worksAmount += workAmount;
             workRowPosition++;
         }
+        workAmountList.add(worksAmount);
     }
 
     private void createMaterials(Task task, Row row, int materialRowPosition,
@@ -226,6 +277,7 @@ public class ReportCreator {
             materialsAmount += materialAmount;
             materialRowPosition++;
         }
+        materialAmountList.add(materialsAmount);
     }
 
     private void copyStylesForElements(int cellStart, int cellEnd, Row tRow,
@@ -256,8 +308,9 @@ public class ReportCreator {
             for (int cellI = startCell; cellI < endCell; cellI++) {
                 sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
                 Cell tCell = null;
-                if (tRow != null)
+                if (tRow != null) {
                     tCell = tRow.getCell(cellI);
+                }
                 Cell cell = row.createCell(cellI);
                 copyCell(tCell, cell);
             }
@@ -283,6 +336,13 @@ public class ReportCreator {
         Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         copyCell(tSheet.getRow(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK).getCell(i), cell);
         cell.setCellValue(value);
+        return cell;
+    }
+
+    private Cell addCellType(int rowNum, int cellNum, CellType cellType) {
+        Row row = sheet.getRow(rowNum);
+        Cell cell = row.getCell(cellNum);
+        cell.setCellType(cellType);
         return cell;
     }
 

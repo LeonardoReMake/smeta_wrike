@@ -15,6 +15,7 @@ CREATE TABLE material (
     task_id bigint,
     template_id bigint
 );
+
 CREATE TABLE task (
     id bigint NOT NULL,
     amount double precision,
@@ -35,8 +36,6 @@ CREATE TABLE template (
     id bigint NOT NULL,
     name character varying(255)
 );
-
-
 
 CREATE TABLE work (
     id bigint NOT NULL,

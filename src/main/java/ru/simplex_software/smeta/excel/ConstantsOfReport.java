@@ -10,11 +10,9 @@ public class ConstantsOfReport {
 
     public static final int COUNT_ROWS_HEADER = 12;
 
-    public static final int COUNT_CELLS_ESTIMATE = 12;
+    public static final int COUNT_CELLS_ESTIMATE = 11;
 
     public static final int INDEX_SHEET = 0;
-
-    public static final int ROW_NUM_AMOUNT_HEADER = 6;
 
     public static final int CELL_NUM_AMOUNT_HEADER = 8;
 
@@ -28,10 +26,18 @@ public class ConstantsOfReport {
 
     public static final int CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE = 10;
 
-    public static final int TOTAL_NUM_ROW_AMOUNT_FOR_ELEMENT = 2;
-
     public static final int ROW_POSITION_AMOUNT_FOR_WORK = 2;
 
-    public static final String TOTAL = "Итого";
+    public static final int CELL_NUM_END_FOR_TITLE = 9;
+
+    public static final int ROW_FOR_LOCAL_ESTIMATE = 3;
+
+    public static final int ROW_FOR_AMOUNT_NOT_VAT = 6;
+
+    public static final int ROW_FOR_VAT = 8;
+
+    public static final int ROW_FOR_VAT_AMOUNT = 9;
+
+    public static final int ROW_FOR_ESTIMATE_PERIOD = 4;
 
 }
