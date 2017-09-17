@@ -35,6 +35,7 @@ public class WrikeTaskDaoImpl {
 
     public List<Task> findTasksStartDate(LocalDateTime startDate) {
         String url = API_ADDRESS + "/tasks?fields=[\"parentIds\",\"superParentIds\"]&createdDate={createdDate}";
+        startDate = startDate.plusSeconds(1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
         String createdDate = "{\"start\":\"" + formatter.format(startDate) + "\"}";
 
