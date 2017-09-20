@@ -34,10 +34,14 @@ public class ConstantsOfReport {
 
     public static final int ROW_FOR_AMOUNT_NOT_VAT = 6;
 
+    public static final int AMOUNT_DEPARTURES = 7;
+
     public static final int ROW_FOR_VAT = 8;
 
     public static final int ROW_FOR_VAT_AMOUNT = 9;
 
     public static final int ROW_FOR_ESTIMATE_PERIOD = 4;
+
+    public static final String RU_STRING = "р.";
 
 }

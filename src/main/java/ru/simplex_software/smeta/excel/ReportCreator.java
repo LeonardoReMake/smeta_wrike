@@ -61,48 +61,65 @@ public class ReportCreator {
         final String contract = " к Договору подряда №" + numberOfReport + " от "  + dateOfReport;
         final String localCalculation = "Локальный сметный расчет №" + numberNumber + contract;
         final String estimatePeriod = "Отчетный период с " + dateBegin + " июня 2017г. по " + dateEnd
-                                        + " июня 2017г.";
+                + " июня 2017г.";
 
         copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
 
         final Cell cellEstimateAmount = addCellType(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
-        cellEstimateAmount.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + "р.");
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
+                ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellEstimateAmount.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + ConstantsOfReport.RU_STRING);
 
         final Cell cellContract = addCellType(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
-                                              ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
-                                              CellType.STRING);
+                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK,
-                                                    ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK,
-                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+                ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK,
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
         cellContract.setCellValue(contract);
 
         final Cell cellLocalEstimate = addCellType(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
-                                                   ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
-                                                    ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
-                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+                ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
         cellLocalEstimate.setCellValue(localCalculation);
 
         final Cell cellEstimatePeriod = addCellType(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
-                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
-                                                    ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
-                                                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+                ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
         cellEstimatePeriod.setCellValue(estimatePeriod);
 
         final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
-                                         ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
-        cellVAT.setCellValue(simpleVAT + "р.");
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT,
+                ConstantsOfReport.ROW_FOR_VAT,
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellVAT.setCellValue(simpleVAT + ConstantsOfReport.RU_STRING);
+
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.AMOUNT_DEPARTURES,
+                ConstantsOfReport.AMOUNT_DEPARTURES,
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
         final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
-                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
-        cellEstimateWithVAT.setCellValue(estimateWithVAT + "р.");
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
+                ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellEstimateWithVAT.setCellValue(estimateWithVAT + ConstantsOfReport.RU_STRING);
     }
 
     public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
@@ -122,8 +139,8 @@ public class ReportCreator {
             Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
 
             sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
-                                                        ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                                        ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                    ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
             final Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
 
@@ -151,10 +168,10 @@ public class ReportCreator {
         final int maxRowPositionOfFooter = 16;
 
         copyStylesOfElement(getTemplateFooter(), freeRowPosition,
-                    freeRowPosition + maxRowPositionOfFooter,
-                            ConstantsOfReport.INDEX_SHEET,
-                            ConstantsOfReport.COUNT_CELLS_ESTIMATE,
-                            freeRowPosition, false);
+                freeRowPosition + maxRowPositionOfFooter,
+                ConstantsOfReport.INDEX_SHEET,
+                ConstantsOfReport.COUNT_CELLS_ESTIMATE,
+                freeRowPosition, false);
 
         double amountWorks = getAmountOfElements(workAmountList);
         double amountMaterials = getAmountOfElements(materialAmountList);
@@ -162,13 +179,13 @@ public class ReportCreator {
         Row row = sheet.getRow(freeRowPosition);
 
         final Cell cellAmountOfWorks = addCellType(row.getRowNum(),
-                                                   ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK,
-                                                   CellType.NUMERIC);
+                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK,
+                CellType.NUMERIC);
         cellAmountOfWorks.setCellValue(amountWorks);
 
         final Cell cellAmountOfMaterials = addCellType(row.getRowNum(),
-                                                       ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
-                                                       CellType.NUMERIC);
+                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                CellType.NUMERIC);
         cellAmountOfMaterials.setCellValue(amountMaterials);
 
         double amountOfEstimate = amountMaterials + amountWorks;
@@ -176,8 +193,18 @@ public class ReportCreator {
         row = sheet.getRow(freeRowPosition + rowPositionOfEstimate);
 
         final Cell cellAmountOfEstimate = addCellType(row.getRowNum(),
-                                                      ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
-                                                      CellType.NUMERIC);
+                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                CellType.NUMERIC);
+
+        sheet.addMergedRegion((new CellRangeAddress(row.getRowNum(),
+                row.getRowNum(),
+                ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        sheet.addMergedRegion((new CellRangeAddress(row.getRowNum() + 1,
+                row.getRowNum() + 1,
+                ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
+                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+
         cellAmountOfEstimate.setCellValue(String.valueOf(amountOfEstimate));
 
     }
@@ -215,12 +242,12 @@ public class ReportCreator {
             row = sheet.createRow(workRowPosition);
             tRow = tSheet.getRow(ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK);
             copyStylesForElements(cellStart, cellEnd, tRow,
-                                  row, tCell, numericCell, worksAmount, tSheet);
+                    row, tCell, numericCell, worksAmount, tSheet);
         }
     }
 
     private void createAmountForMaterials(int materialRowPosition, int workRowPosition, Row row, Row tRow, Sheet tSheet,
-                                            Cell tCell, double materialsAmount) {
+                                          Cell tCell, double materialsAmount) {
         if (materialRowPosition > freeRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK) {
             final int cellStart = 6;
             final int cellEnd = 11;
@@ -261,7 +288,7 @@ public class ReportCreator {
     }
 
     private void createMaterials(Task task, Row row, int materialRowPosition,
-                                                     int workRowPosition, double materialsAmount) {
+                                 int workRowPosition, double materialsAmount) {
         for(Material material : task.getMaterials()) {
             double materialAmount = material.getAmount();
             if (materialRowPosition > workRowPosition) {
@@ -299,7 +326,7 @@ public class ReportCreator {
 
     private void copyStylesOfElement(Workbook template, int startRow, int endRow,
                                      int startCell, int endCell, int rowShift, boolean isHeader) {
-        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
+        final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         for (rowI = startRow; rowI < endRow; rowI++) {
             Row row = sheet.createRow(rowI);
             Row tRow = tSheet.getRow(rowI - rowShift);
@@ -310,12 +337,11 @@ public class ReportCreator {
                 Cell tCell = null;
                 if (tRow != null) {
                     tCell = tRow.getCell(cellI);
+                    Cell cell = row.createCell(cellI);
+                    copyCell(tCell, cell);
                 }
-                Cell cell = row.createCell(cellI);
-                copyCell(tCell, cell);
             }
         }
-
     }
 
     private double getAmountsOfEstimate(List<Double> worksAmount, List<Double> materialsAmount) {
@@ -368,8 +394,9 @@ public class ReportCreator {
         try {
             return WorkbookFactory.create(new File(getClass().getClassLoader().getResource("template/footer_template.xlsx").getFile()));
         } catch (IOException e) {
-            return null;
+            LOG.error(e.getMessage());
         }
+        return null;
     }
 
     private void copyRowStyle(Row from, Row to) {
