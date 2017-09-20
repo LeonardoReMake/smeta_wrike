@@ -297,10 +297,19 @@ public class ReportCreator {
                                  int workRowPosition, double materialsAmount) {
         for(Material material : task.getMaterials()) {
             double materialAmount = material.getAmount();
-            if (materialRowPosition > workRowPosition) {
-                row = sheet.createRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+//            if (materialRowPosition > workRowPosition) {
+//                row = sheet.createRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+//            } else {
+//                row = sheet.getRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+//            }
+            int newRowIndex = materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK;
+            if (sheet.getRow(newRowIndex) != null) {
+                row = sheet.getRow(newRowIndex);
             } else {
-                row = sheet.getRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
+                row = sheet.createRow(newRowIndex);
+            }
+            if (row == null) {
+                LOG.error("Row is null while creating materials. Task name = "+task.getName());
             }
             createTaskElementCell(row,6, material.getName());
             createTaskElementCell(row, 7, material.getUnits());

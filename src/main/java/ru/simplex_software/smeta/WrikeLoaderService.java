@@ -50,8 +50,8 @@ public class WrikeLoaderService {
                 parseTaskTitle(task);
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
                 taskDAO.saveOrUpdate(task);
-                createNewWorks(task);
-                createNewMaterials(task);
+//                createNewWorks(task);
+//                createNewMaterials(task);
             }
         } else {
             LOG.info("No new tasks");
