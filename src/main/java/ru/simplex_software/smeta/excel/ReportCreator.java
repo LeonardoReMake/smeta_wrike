@@ -149,13 +149,19 @@ public class ReportCreator {
             workRowPosition = freeRowPosition;
             materialRowPosition = freeRowPosition;
 
-            createWorks(task, row, workRowPosition, worksAmount);
-            workRowPosition++;
-            createAmountForWorks(workRowPosition, row, tRow, tSheet, tCell, worksAmount);
+            if (task.getWorks() != null && !task.getWorks().isEmpty()) {
+                createWorks(task, row, workRowPosition, worksAmount);
+                workRowPosition++;
+                createAmountForWorks(workRowPosition, row, tRow, tSheet, tCell, worksAmount);
+            } else {
+                sheet.createRow(workRowPosition + 1);
+            }
 
-            createMaterials(task, row, materialRowPosition, workRowPosition, materialsAmount);
-            materialRowPosition++;
-            createAmountForMaterials(materialRowPosition, workRowPosition, row, tRow, tSheet, tCell, materialsAmount);
+            if (task.getMaterials() != null && !task.getMaterials().isEmpty()) {
+                createMaterials(task, row, materialRowPosition, workRowPosition, materialsAmount);
+                materialRowPosition++;
+                createAmountForMaterials(materialRowPosition, workRowPosition, row, tRow, tSheet, tCell, materialsAmount);
+            }
 
             matchingRowPosition(workRowPosition, materialRowPosition);
 
