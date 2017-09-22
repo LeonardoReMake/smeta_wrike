@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
+import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
@@ -14,7 +15,9 @@ import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
+import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.model.Work;
 
 import java.util.HashMap;
 import java.util.List;
@@ -55,11 +58,22 @@ public class TaskViewModel {
     @Init
     public void init() {
         List<Task> taskList = taskDAO.findAllTasks();
+
         for (Task task : taskList) {
-            task.setFilled(!(task.getWorks().isEmpty() &&
-                             task.getMaterials().isEmpty()));
+            double amountTask = 0;
+            for (Work work : task.getWorks()) {
+                amountTask += work.getAmount();
+            }
+
+            for (Material material : task.getMaterials()) {
+                amountTask += material.getAmount();
+            }
+
+            task.setAmount(amountTask);
         }
-        taskListModel = new ListModelList<>(taskList);
+        // refresh
+        taskListModel.clear();
+        taskListModel.addAll(taskList);
     }
 
     @Command
@@ -72,12 +86,21 @@ public class TaskViewModel {
     }
 
     @Command
+    @NotifyChange("taskListModel")
     public void getWorksAndMaterials(@BindingParam("task") Task task) {
         Map<String, Task> tasksMap = new HashMap<>();
 
         tasksMap.put("task", task);
 
         Executions.createComponents("/dialog.zul", null, tasksMap);
+//        components.addEventListener("onClose", new EventListener<Event>() {
+//            @Override
+//            public void onEvent(Event event) throws Exception {
+//                taskListModel.clear();
+//                taskListModel.addAll(taskList);
+//            }
+//        });
+
     }
 
 }

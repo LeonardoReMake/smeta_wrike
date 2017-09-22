@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
     <window id="wmWindow" title="Редактирование задачи" mode="modal" closable="true" width="100%"
-            viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')">
+            viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')" onClick="@command('closeWindow')">
         <hbox style="margin: 5px">
             <vbox visible="@bind(!wmVM.fromTemplate)">
                 <button visible="@bind(!wmVM.canFromTemplate)" label="Добавить из шаблона" onClick="@command('findNewTemplate')"/>
@@ -15,7 +15,7 @@
                         </template>
                     </combobox>
                     <hbox>
-                        <intbox format="#,##0" placeholder="Количество" value="@bind(wmVM.countTemplate)"></intbox>
+                        <intbox constraint="no empty" format="#,##0" placeholder="Количество" value="@bind(wmVM.countTemplate)"></intbox>
                         <button label="Добавить" onClick="@command('findTemplate')"/>
                         <button label="Отменить" onClick="@command('cancelFindingTemplate')"/>
                     </hbox>
@@ -24,7 +24,7 @@
             <vbox visible="@bind(!wmVM.toTemplate)">
                 <button label="Сохранить как шаблон" visible="@bind(!wmVM.canToTemplate)" onClick="@command('addNewTemplate')"/>
                 <hbox visible="@bind(wmVM.canToTemplate)">
-                    <textbox value="@bind(wmVM.template.name)" placeholder="Имя шаблона"/>
+                    <textbox constraint="no empty" value="@bind(wmVM.template.name)" placeholder="Имя шаблона"/>
                     <button label="Сохранить" onClick="@command('addTemplate')" />
                     <button label="Отменить" onClick="@command('cancelAddingTemplate')" />
                 </hbox>
@@ -43,7 +43,7 @@
                     </columns>
                     <template name="model">
                         <row align="center">
-                            <textbox inplace="true" value="@bind(each.name)" onChange="@command(wmVM.updateNewWork(each))"/>
+                            <textbox constraint="no empty" inplace="true" value="@bind(each.name)" onChange="@command(wmVM.updateNewWork(each))"/>
                             <textbox inplace="true" value="@bind(each.units)" onChange="@command(wmVM.updateNewWork(each))"/>
                             <doublebox inplace="true" value="@bind(each.quantity)"
                                        format=",###.#" onChange="@command(wmVM.updateNewWork(each))"/>
@@ -51,19 +51,19 @@
                                        format=",###.#" onChange="@command(wmVM.updateNewWork(each))"/>
                             <doublebox inplace="true" value="@bind(each.amount)"
                                        format=",###.#" onChange="@command(wmVM.updateNewWork(each))"/>
-                            <button label="Удалить" onClick="@command(wmVM.deleteWork(each))"/>
+                            <button label="Удалить" onClick="@command(wmVM.deleteWork(each)) @global-command('refresh')"/>
                         </row>
                     </template>
                 </grid>
                 <grid visible="@bind(wmVM.canWork)">
                     <rows>
                         <row>
-                            <textbox placeholder="Работа" value="@bind(wmVM.work.name)" width="95%"/>
+                            <textbox constraint="no empty" placeholder="Работа" value="@bind(wmVM.work.name)" width="95%"/>
                             <textbox placeholder="Ед. изм." value="@bind(wmVM.work.units)" width="95%"/>
                             <doublebox placeholder="Кол-во" value="@bind(wmVM.work.quantity)" format=",###.#" width="95%"/>
                             <doublebox placeholder="Цена за ед" value="@bind(wmVM.work.unitPrice)" format=",###.#" width="95%"/>
                             <button label="Отменить" onClick="@command('onChangeVisibilityAddWork')" visible="@bind(wmVM.canWork)"/>
-                            <button label="Добавить" onClick="@command('addNewWork')"/>
+                            <button label="Добавить" onClick="@command('addNewWork') @global-command('refresh')"/>
                         </row>
                     </rows>
                 </grid>
@@ -80,7 +80,7 @@
                     </columns>
                     <template name="model">
                         <row align="center">
-                            <textbox inplace="true" value="@bind(each.name)" onChange="@command(wmVM.updateNewMaterial(each))"/>
+                            <textbox constraint="no empty" inplace="true" value="@bind(each.name)" onChange="@command(wmVM.updateNewMaterial(each))"/>
                             <textbox inplace="true" value="@bind(each.units)" onChange="@command(wmVM.updateNewMaterial(each))"/>
                             <doublebox inplace="true" value="@bind(each.quantity)"
                                        format=",###.#" onChange="@command(wmVM.updateNewMaterial(each))"/>
@@ -88,14 +88,14 @@
                                        format=",###.#" onChange="@command(wmVM.updateNewMaterial(each))"/>
                             <doublebox inplace="true" value="@bind(each.amount)"
                                        format=",###.#" onChange="@command(wmVM.updateNewMaterial(each))"/>
-                            <button label="Удалить" onClick="@command(wmVM.deleteMaterial(each))"/>
+                            <button label="Удалить" onClick="@command(wmVM.deleteMaterial(each)) @global-command('refresh')"/>
                         </row>
                     </template>
                 </grid>
                 <grid visible="@bind(wmVM.canMaterial)">
                     <rows>
                         <row>
-                            <textbox placeholder="Работа" value="@bind(wmVM.material.name)" width="95%"/>
+                            <textbox constraint="no empty" placeholder="Материал" value="@bind(wmVM.material.name)" width="95%"/>
                             <textbox placeholder="Ед. изм." value="@bind(wmVM.material.units)" width="95%"/>
                             <doublebox placeholder="Кол-во" value="@bind(wmVM.material.quantity)" format=",###.#" width="95%"/>
                             <doublebox placeholder="Цена за ед" value="@bind(wmVM.material.unitPrice)" format=",###.#" width="95%"  />
@@ -110,7 +110,7 @@
             <button label="Добавить работу" visible="@bind(!wmVM.canWork)" onClick="@command('onChangeVisibilityAddWork')"/>
             <button label="Добавить материал" visible="@bind(!wmVM.canMaterial)" onClick="@command('onChangeVisibilityAddMaterial')"/>
         </hbox>
-        <button label="Закрыть" onClick="wmWindow.detach()"/>
+        <button label="Закрыть" onClick="@command('closeWindow')"/>
         <space/>
     </window>
 </zk>

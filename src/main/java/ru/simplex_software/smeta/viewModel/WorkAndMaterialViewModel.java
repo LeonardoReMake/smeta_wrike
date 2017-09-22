@@ -5,11 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.AfterCompose;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
+import org.zkoss.bind.annotation.ContextParam;
+import org.zkoss.bind.annotation.ContextType;
 import org.zkoss.bind.annotation.ExecutionArgParam;
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import org.zkoss.zul.ListModelList;
+import org.zkoss.zul.Window;
 import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TemplateDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
@@ -63,6 +67,8 @@ public class WorkAndMaterialViewModel {
     private boolean fromTemplate;
 
     private boolean toTemplate;
+
+    private Window window;
 
     public boolean isFromTemplate() {
         return fromTemplate;
@@ -179,7 +185,7 @@ public class WorkAndMaterialViewModel {
     }
 
     @AfterCompose
-    public void init(@ExecutionArgParam("task") Task task) {
+    public void init(@ExecutionArgParam("task") Task task, @ContextParam(ContextType.VIEW) Window window) {
         List<Work> workList = workDAO.findByTask(task);
         taskWorkListModel = new ListModelList<>(workList);
 
@@ -190,6 +196,7 @@ public class WorkAndMaterialViewModel {
         templateListModel = new ListModelList<>(templateList);
 
         this.task = task;
+        this.window = window;
     }
 
     @Command
@@ -206,7 +213,6 @@ public class WorkAndMaterialViewModel {
     @NotifyChange("taskWorkListModel")
     public void updateNewWork(@BindingParam("work") Work work) {
         countAmount(work);
-        taskWorkListModel.notifyChange(work);
         workDAO.saveOrUpdate(work);
     }
 
@@ -253,7 +259,6 @@ public class WorkAndMaterialViewModel {
     @NotifyChange("taskMaterialListModel")
     public void updateNewMaterial(@BindingParam("material") Material material) {
         countAmount(material);
-        taskMaterialListModel.set(taskMaterialListModel.indexOf(material), material);
         materialDAO.saveOrUpdate(material);
     }
 
@@ -264,15 +269,9 @@ public class WorkAndMaterialViewModel {
         materialDAO.delete(materialDAO.get(material.getId()));
     }
 
-    private void countAmount(Element element) {
-        if (element.getQuantity() != null && element.getUnitPrice() != null) {
-            element.setAmount(element.getQuantity() * element.getUnitPrice());
-        }
-    }
-
     // save template
     @Command
-    @NotifyChange({"canToTemplate", "template", "templateListModel", "taskWorkListModel", "taskMaterialListModel", "fromTemplate", "canFromTemplate"})
+    @NotifyChange({"canToTemplate", "fromTemplate", "canFromTemplate"})
     public void addTemplate() {
         Template newTemplate = new Template();
         for (Work work : taskWorkListModel) {
@@ -292,8 +291,8 @@ public class WorkAndMaterialViewModel {
             newTemplateMaterial.setUnitPrice(material.getUnitPrice());
             newTemplateMaterial.setUnits(material.getUnits());
             newTemplateMaterial.setAmount(material.getAmount());
-            newTemplateMaterial.setTemplate(newTemplate);
             newTemplateMaterial.setName(material.getName());
+            newTemplateMaterial.setTemplate(newTemplate);
             newTemplate.getMaterialList().add(newTemplateMaterial);
         }
 
@@ -337,7 +336,7 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange({"canFromTemplate", "templateListModel", "canToTemplate", "canToTemplate", "toTemplate"})
+    @NotifyChange({"canFromTemplate", "templateListModel", "canToTemplate", "toTemplate"})
     public void findNewTemplate() {
         if (!canFromTemplate) {
             List<Template> templateList = templateDAO.findAllTemplates();
@@ -348,16 +347,22 @@ public class WorkAndMaterialViewModel {
         canFromTemplate = !canFromTemplate;
     }
 
+    @Command
+    public void closeWindow() {
+        Events.postEvent("onClose", window, null);
+    }
+
     // применить шаблон
     @Command
-    @NotifyChange({"canFromTemplate", "canToTemplate", "taskWorkListModel", "taskMaterialListModel", "fromTemplate", "toTemplate"})
+    @NotifyChange({"canFromTemplate", "canToTemplate", "taskWorkListModel",
+                    "taskMaterialListModel", "fromTemplate", "toTemplate"})
     public void findTemplate() {
         int countTemplate = this.countTemplate;
 
         for (int i = 0; i < countTemplate; i++) {
-            // template's works
-            List<Work> templateWorkList = workDAO.findByTemplate(this.template);
-            List<Material> templateMaterialList = materialDAO.findByTemplate(this.template);
+            // template's works and materials
+            List<Work> templateWorkList = workDAO.findByTemplate(template);
+            List<Material> templateMaterialList = materialDAO.findByTemplate(template);
 
             Iterator<Work> workIterator = templateWorkList.iterator();
             Iterator<Material> materialIterator = templateMaterialList.iterator();
@@ -374,6 +379,12 @@ public class WorkAndMaterialViewModel {
         toTemplate = !toTemplate;
     }
 
+    private void countAmount(Element element) {
+        if (element.getQuantity() != null && element.getUnitPrice() != null) {
+            element.setAmount(element.getQuantity() * element.getUnitPrice());
+        }
+    }
+
     private void updateAmount(Work work) {
         work.setAmount(work.getQuantity() * work.getUnitPrice());
     }
@@ -383,8 +394,6 @@ public class WorkAndMaterialViewModel {
 
         while (iterator.hasNext()) {
             Element outerWork = iterator.next();
-            LOG.info(outerWork.toString());
-            LOG.info(outerWork.getName());
             isRemove = true;
             for (Work innerWork : taskWorkListModel) {
                 if (innerWork.getName().equals(outerWork.getName())
@@ -406,15 +415,15 @@ public class WorkAndMaterialViewModel {
         boolean isRemove;
 
         while (iterator.hasNext()) {
-            isRemove = true;
             Element outerMaterial = iterator.next();
+            isRemove = true;
             for (Material innerMaterial : taskMaterialListModel) {
-                if (innerMaterial.getName().equals(outerMaterial.getName()) && innerMaterial.getUnits().equals(outerMaterial.getUnits())
+                if (innerMaterial.getName().equals(outerMaterial.getName())
                         && innerMaterial.getUnitPrice().equals(outerMaterial.getUnitPrice()) && isRemove) {
                     innerMaterial.setQuantity(innerMaterial.getQuantity() + outerMaterial.getQuantity());
                     innerMaterial.setAmount(innerMaterial.getQuantity() * innerMaterial.getUnitPrice());
                     taskMaterialListModel.notifyChange(innerMaterial);
-                    materialDAO.saveOrUpdate(materialDAO.get(innerMaterial.getId()));
+                    materialDAO.saveOrUpdate(innerMaterial);
                     isRemove = false;
                 }
             }

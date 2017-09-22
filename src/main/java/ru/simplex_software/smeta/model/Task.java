@@ -78,11 +78,8 @@ public class Task extends LongIdPersistentEntity {
     public Task() {}
 
     public boolean isFilled() {
-        return filled;
-    }
-
-    public void setFilled(boolean filled) {
-        this.filled = filled;
+        return !(works.isEmpty() &&
+                 materials.isEmpty());
     }
 
     public String getWrikeId() {
@@ -184,4 +181,7 @@ public class Task extends LongIdPersistentEntity {
         this.parentIds = parentIds;
     }
 
+    public void setFilled(boolean filled) {
+        this.filled = filled;
+    }
 }
