@@ -37,7 +37,7 @@ public class ReportServlet implements HttpRequestHandler {
         try {
             reportCreator.copyFromTemplateTask(tasks);
             reportCreator.copyFromTemplateFooter();
-            reportCreator.copyFromTemplateHeader();
+            reportCreator.copyFromTemplateHeader(taskDAO.findAllTasks());
             reportCreator.write(outputStream);
         } catch (InvalidFormatException e) {
            LOG.error(e.getMessage());

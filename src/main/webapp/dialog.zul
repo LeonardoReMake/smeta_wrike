@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
     <window id="wmWindow" title="Редактирование задачи" mode="modal" closable="true" width="100%"
-            viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')" onClick="@command('closeWindow')">
+            viewModel="@id('wmVM') @init('ru.simplex_software.smeta.viewModel.WorkAndMaterialViewModel')" onCancel="@command('closeWindow')">
         <hbox style="margin: 5px">
             <vbox visible="@bind(!wmVM.fromTemplate)">
                 <button visible="@bind(!wmVM.canFromTemplate)" label="Добавить из шаблона" onClick="@command('findNewTemplate')"/>
@@ -51,7 +51,7 @@
                                        format=",###.#" onChange="@command(wmVM.updateNewWork(each))"/>
                             <doublebox inplace="true" value="@bind(each.amount)"
                                        format=",###.#" onChange="@command(wmVM.updateNewWork(each))"/>
-                            <button label="Удалить" onClick="@command(wmVM.deleteWork(each)) @global-command('refresh')"/>
+                            <button label="Удалить" onClick="@command(wmVM.deleteWork(each))"/>
                         </row>
                     </template>
                 </grid>
@@ -63,7 +63,7 @@
                             <doublebox placeholder="Кол-во" value="@bind(wmVM.work.quantity)" format=",###.#" width="95%"/>
                             <doublebox placeholder="Цена за ед" value="@bind(wmVM.work.unitPrice)" format=",###.#" width="95%"/>
                             <button label="Отменить" onClick="@command('onChangeVisibilityAddWork')" visible="@bind(wmVM.canWork)"/>
-                            <button label="Добавить" onClick="@command('addNewWork') @global-command('refresh')"/>
+                            <button label="Добавить" onClick="@command('addNewWork')"/>
                         </row>
                     </rows>
                 </grid>
@@ -88,7 +88,7 @@
                                        format=",###.#" onChange="@command(wmVM.updateNewMaterial(each))"/>
                             <doublebox inplace="true" value="@bind(each.amount)"
                                        format=",###.#" onChange="@command(wmVM.updateNewMaterial(each))"/>
-                            <button label="Удалить" onClick="@command(wmVM.deleteMaterial(each)) @global-command('refresh')"/>
+                            <button label="Удалить" onClick="@command(wmVM.deleteMaterial(each))"/>
                         </row>
                     </template>
                 </grid>

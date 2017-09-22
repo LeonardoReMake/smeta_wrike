@@ -47,13 +47,15 @@ public class ReportCreator {
         sheet.setDisplayGridlines(false);
     }
 
-    public void copyFromTemplateHeader() throws InvalidFormatException {
+    public void copyFromTemplateHeader(List<Task> taskList) throws InvalidFormatException {
         int numberNumber = 0;
         int numberOfReport = 0;
         Date dateOfReport = null;
 
-        double simpleVAT = 0d;
-        double estimateWithVAT = 0d;
+        double simpleVAT = 0.18;
+        double departures = amountDepartures(taskList);
+        double estimateWithVAT = departures * simpleVAT;
+        double estimateWithoutVAT = estimateWithVAT + departures;
 
         Date dateBegin = null;
         Date dateEnd = null;
@@ -61,18 +63,18 @@ public class ReportCreator {
         final String contract = " к Договору подряда №" + numberOfReport + " от "  + dateOfReport;
         final String localCalculation = "Локальный сметный расчет №" + numberNumber + contract;
         final String estimatePeriod = "Отчетный период с " + dateBegin + " июня 2017г. по " + dateEnd
-                + " июня 2017г.";
+                                                                                        + " июня 2017г.";
 
         copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
 
         final Cell cellEstimateAmount = addCellType(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                                                    ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
         cellEstimateAmount.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + ConstantsOfReport.RU_STRING);
 
         final Cell cellContract = addCellType(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
@@ -106,12 +108,15 @@ public class ReportCreator {
                 ConstantsOfReport.ROW_FOR_VAT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                 ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellVAT.setCellValue(simpleVAT + ConstantsOfReport.RU_STRING);
+        cellVAT.setCellValue(estimateWithVAT + ConstantsOfReport.RU_STRING);
 
+        final Cell cellDeparture = addCellType(ConstantsOfReport.AMOUNT_DEPARTURES,
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.AMOUNT_DEPARTURES,
                 ConstantsOfReport.AMOUNT_DEPARTURES,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                 ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellDeparture.setCellValue(departures + ConstantsOfReport.RU_STRING);
 
         final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
@@ -119,7 +124,16 @@ public class ReportCreator {
                 ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                 ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellEstimateWithVAT.setCellValue(estimateWithVAT + ConstantsOfReport.RU_STRING);
+        cellEstimateWithVAT.setCellValue(estimateWithoutVAT);
+    }
+
+    private double amountDepartures(List<Task> tasks) {
+        final double price = 600;
+        double amounts = 0;
+        for (Task task : tasks) {
+            amounts += task.getAmount();
+        }
+        return amounts * price;
     }
 
     public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
