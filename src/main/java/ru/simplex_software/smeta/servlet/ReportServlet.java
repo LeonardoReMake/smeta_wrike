@@ -42,9 +42,6 @@ public class ReportServlet implements HttpRequestHandler {
         } catch (InvalidFormatException e) {
            LOG.error(e.getMessage());
         }
-
-        outputStream.flush();
-        outputStream.close();
     }
 
 }
