@@ -2,17 +2,20 @@ package ru.simplex_software.smeta.model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Report {
-
+@Entity
+public class Report extends LongIdPersistentEntity{
     private static Logger LOG = LoggerFactory.getLogger(Report.class);
 
     /* Список городов. */
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "report")
     private List<City> cityList = new ArrayList<>();
 
     /* Номер договора. */

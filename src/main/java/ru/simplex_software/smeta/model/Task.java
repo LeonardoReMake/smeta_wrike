@@ -10,6 +10,7 @@ import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -52,7 +53,8 @@ public class Task extends LongIdPersistentEntity {
     private LocalDateTime createdDate;
 
     /** Название города. **/
-    private String city;
+    @OneToOne
+    private City city;
 
     /** Номер заявки. Например: INC1343892. **/
     private String orderNumber;
@@ -66,6 +68,10 @@ public class Task extends LongIdPersistentEntity {
     /** Id папок в wrike. **/
     @Transient
     private List<String> parentIds;
+
+    /** Дата завершания задачи. **/
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private LocalDateTime completedDate;
 
     public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
@@ -132,11 +138,11 @@ public class Task extends LongIdPersistentEntity {
         this.createdDate = createdDate;
     }
 
-    public String getCity() {
+    public City getCity() {
         return city;
     }
 
-    public void setCity(String city) {
+    public void setCity(City city) {
         this.city = city;
     }
 
@@ -183,5 +189,13 @@ public class Task extends LongIdPersistentEntity {
 
     public void setFilled(boolean filled) {
         this.filled = filled;
+    }
+
+    public LocalDateTime getCompletedDate() {
+        return completedDate;
+    }
+
+    public void setCompletedDate(LocalDateTime completedDate) {
+        this.completedDate = completedDate;
     }
 }
