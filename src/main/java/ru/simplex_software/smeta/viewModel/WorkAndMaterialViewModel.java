@@ -210,9 +210,10 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange("taskWorkListModel")
+    @NotifyChange({"taskWorkListModel", "work"})
     public void updateNewWork(@BindingParam("work") Work work) {
         countAmount(work);
+        taskWorkListModel.notifyChange(work);
         workDAO.saveOrUpdate(work);
     }
 
@@ -256,9 +257,10 @@ public class WorkAndMaterialViewModel {
     }
 
     @Command
-    @NotifyChange("taskMaterialListModel")
+    @NotifyChange({"taskMaterialListModel", "material"})
     public void updateNewMaterial(@BindingParam("material") Material material) {
         countAmount(material);
+        taskMaterialListModel.notifyChange(material);
         materialDAO.saveOrUpdate(material);
     }
 

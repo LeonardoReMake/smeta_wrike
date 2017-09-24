@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Report extends LongIdPersistentEntity{
+public class Report extends LongIdPersistentEntity {
     private static Logger LOG = LoggerFactory.getLogger(Report.class);
 
     /* Список городов. */
