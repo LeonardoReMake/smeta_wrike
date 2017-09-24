@@ -3,10 +3,12 @@ package ru.simplex_software.smeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.simplex_software.smeta.dao.CityDAO;
 import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
+import ru.simplex_software.smeta.model.City;
 import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
@@ -30,6 +32,9 @@ public class WrikeLoaderService {
 
     @Resource
     private MaterialDAO materialDAO;
+
+    @Resource
+    private CityDAO cityDAO;
 
     public void loadNewTasks() {
         List<Task> taskInDb = taskDAO.findAllTasks();
@@ -130,8 +135,18 @@ public class WrikeLoaderService {
             id = parts[i];
         }
 
+        List<City> cities = cityDAO.findCityForName(city);
+        City taskCity;
+        if (cities == null || cities.isEmpty()) {
+            taskCity = new City();
+            taskCity.setName(city);
+            cityDAO.create(taskCity);
+        } else {
+            taskCity = cities.get(0);
+        }
+
         task.setShopName(shop.toString());
-        task.setCity(city);
+        task.setCity(taskCity);
         task.setOrderNumber(id);
     }
 
