@@ -28,4 +28,12 @@ public interface TaskFilterImplDAO extends Dao<Task, Long> {
 //            "COALESCE(task.completedDate, filter.startDate, cast('2001-01-01' as date)) >= COALESCE(filter.startDate, task.createdDate, cast('2001-01-01' as date)) and " +
 //            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.createdDate, cast('2001-01-01' as date))")
     Long countTasksByFilter(@Named("filter") TaskFilter taskFilter);
+
+    @Finder(query = "from Task task, TaskFilter filter " +
+            "where filter = :filter and " +
+            "task.city = COALESCE(filter.city, task.city) " +
+//            "COALESCE(task.completedDate, filter.startDate, cast('2001-01-01' as date)) >= COALESCE(filter.startDate, task.createdDate, cast('2001-01-01' as date)) and " +
+//            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.createdDate, cast('2001-01-01' as date)) " +
+            "order by task.createdDate desc")
+    List<Task> findTasksByFilter(@Named("filter") TaskFilter taskFilter);
 }
