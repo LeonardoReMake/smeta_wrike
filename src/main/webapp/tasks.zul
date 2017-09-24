@@ -31,7 +31,7 @@
                 </listitem>
             </template>
         </listbox>
-        <button label="Отчёт (Excel или Pdf)" href="/ReportXlsx"/>
+        <button label="Отчёт (Excel или Pdf)" href="/ReportXlsx" target="_blank"/>
         <button label="Загрузить новые задачи" onClick="@command('loadNewTasks')"/>
     </window>
 
