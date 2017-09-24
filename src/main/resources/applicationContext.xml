@@ -70,7 +70,7 @@
                     client-secret="${oauth.clientSecret}"
                     user-authorization-uri="${oauth.userAuthorizationUri}"
                     token-name="${oauth.tokenName}"
-                    use-current-uri="false"
+                    use-current-uri="${oauth.useCurrentUri}"
                     authentication-scheme="query"
                     client-authentication-scheme="${oauth.clientAuthenticationScheme}" />
 
