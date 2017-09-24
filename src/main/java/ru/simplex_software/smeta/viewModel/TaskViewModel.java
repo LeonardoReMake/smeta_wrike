@@ -2,23 +2,31 @@ package ru.simplex_software.smeta.viewModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zkoss.bind.annotation.AfterCompose;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.bind.annotation.Init;
+import org.zkoss.bind.annotation.ContextParam;
+import org.zkoss.bind.annotation.ContextType;
 import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
-import org.zkoss.zul.ListModelList;
 import ru.simplex_software.smeta.WrikeLoaderService;
+import ru.simplex_software.smeta.dao.CityDAO;
 import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
+import ru.simplex_software.smeta.dao.TaskFilterDAO;
+import ru.simplex_software.smeta.dao.TaskFilterImplDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
+import ru.simplex_software.smeta.model.City;
 import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,21 +51,57 @@ public class TaskViewModel {
     @WireVariable
     private WrikeLoaderService wrikeLoaderService;
 
-    private ListModelList<Task> taskListModel = new ListModelList<>();
+    @WireVariable
+    private CityDAO cityDAO;
+
+    @WireVariable
+    private TaskFilterImplDAO taskFilterImplDAO;
+
+    @WireVariable
+    private TaskFilterDAO taskFilterDAO;
+
+    // текущий фильтр
+    private TaskFilter filter;
+
+    // список город, которые будут отображаться в выпадающем списке в complete боксе
+    private List<City> cities = new ArrayList<>();
+
+    private TaskListModel taskListModel;
 
     public TaskViewModel() {}
 
-    public ListModelList<Task> getTaskListModel() {
+    public List<City> getCities() {
+        return cities;
+    }
+
+    public TaskFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(TaskFilter filter) {
+        this.filter = filter;
+    }
+
+    public TaskListModel getTaskListModel() {
         return taskListModel;
     }
 
-    public void setTaskListModel(ListModelList<Task> taskListModel) {
+    public void setTaskListModel(TaskListModel taskListModel) {
         this.taskListModel = taskListModel;
     }
 
-    @Init
+    @AfterCompose
+    @NotifyChange("taskListModel")
     public void init() {
         List<Task> taskList = taskDAO.findAllTasks();
+
+        List<TaskFilter> filters = taskFilterDAO.findAllFilters();
+        if (filters.isEmpty()) {
+            filter = new TaskFilter();
+            taskFilterDAO.create(filter);
+        } else {
+            filter = filters.get(0);
+        }
 
         for (Task task : taskList) {
             double amountTask = 0;
@@ -71,18 +115,17 @@ public class TaskViewModel {
 
             task.setAmount(amountTask);
         }
-        // refresh
-        taskListModel.clear();
-        taskListModel.addAll(taskList);
+
+        taskListModel = new TaskListModel(filter, taskDAO, taskFilterImplDAO);
+        refreshList();
     }
 
     @Command
+    @NotifyChange("taskListModel")
     public void loadNewTasks() {
         wrikeLoaderService.loadNewTasks();
 
-        final List<Task> taskList = taskDAO.findAllTasks();
-        taskListModel.clear();
-        taskListModel.addAll(taskList);
+        refreshList();
     }
 
     @Command
@@ -101,6 +144,37 @@ public class TaskViewModel {
 //            }
 //        });
 
+    }
+
+    @Command
+    @NotifyChange({"cities"})
+    public void cityTyped(@ContextParam(ContextType.TRIGGER_EVENT) InputEvent event) {
+        String typed = event.getValue();
+        if (typed != null && typed.length() > 2) {
+            cities = cityDAO.findLikeNameCaseInsensitive("%"+typed+"%");
+        } else {
+            cities = null;
+        }
+    }
+
+    @Command
+    @NotifyChange({"taskListModel"})
+    public void applyFilter() {
+        taskFilterDAO.saveOrUpdate(filter);
+        refreshList();
+    }
+
+    @Command
+    @NotifyChange("filter")
+    public void clearFilter() {
+        filter.setCity(null);
+        filter.setStartDate(null);
+        filter.setEndDate(null);
+        taskFilterDAO.saveOrUpdate(filter);
+    }
+
+    private void refreshList() {
+        taskListModel.refresh(filter);
     }
 
 }
