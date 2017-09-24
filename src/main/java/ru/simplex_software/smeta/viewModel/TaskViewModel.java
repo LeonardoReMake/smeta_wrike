@@ -8,7 +8,10 @@ import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.ContextParam;
 import org.zkoss.bind.annotation.ContextType;
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.event.Event;
+import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
@@ -104,16 +107,7 @@ public class TaskViewModel {
         }
 
         for (Task task : taskList) {
-            double amountTask = 0;
-            for (Work work : task.getWorks()) {
-                amountTask += work.getAmount();
-            }
-
-            for (Material material : task.getMaterials()) {
-                amountTask += material.getAmount();
-            }
-
-            task.setAmount(amountTask);
+            addAmountForTask(task);
         }
 
         taskListModel = new TaskListModel(filter, taskDAO, taskFilterImplDAO);
@@ -124,7 +118,6 @@ public class TaskViewModel {
     @NotifyChange("taskListModel")
     public void loadNewTasks() {
         wrikeLoaderService.loadNewTasks();
-
         refreshList();
     }
 
@@ -132,18 +125,18 @@ public class TaskViewModel {
     @NotifyChange("taskListModel")
     public void getWorksAndMaterials(@BindingParam("task") Task task) {
         Map<String, Task> tasksMap = new HashMap<>();
-
         tasksMap.put("task", task);
 
-        Executions.createComponents("/dialog.zul", null, tasksMap);
-//        components.addEventListener("onClose", new EventListener<Event>() {
-//            @Override
-//            public void onEvent(Event event) throws Exception {
-//                taskListModel.clear();
-//                taskListModel.addAll(taskList);
-//            }
-//        });
-
+        Component components = Executions.createComponents("/dialog.zul", null, tasksMap);
+        components.addEventListener("onClose", new EventListener<Event>() {
+            @Override
+            public void onEvent(Event event) throws Exception {
+                Task persistentTask = taskDAO.get(task.getId());
+                addAmountForTask(persistentTask);
+                taskDAO.saveOrUpdate(persistentTask);
+                refreshList();
+            }
+        });
     }
 
     @Command
@@ -175,6 +168,19 @@ public class TaskViewModel {
 
     private void refreshList() {
         taskListModel.refresh(filter);
+    }
+
+    private void addAmountForTask(Task task) {
+        double amountTask = 0;
+        for (Work work : task.getWorks()) {
+            amountTask += work.getAmount();
+        }
+
+        for (Material material : task.getMaterials()) {
+            amountTask += material.getAmount();
+        }
+
+        task.setAmount(amountTask);
     }
 
 }

@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 public class ReportCreator {
-    
+
     private static Logger LOG = LoggerFactory.getLogger(ReportCreator.class);
 
     private static final String TEMPLATE_HEADER_PATH = "template/header_template.xlsx";
@@ -405,7 +405,7 @@ public class ReportCreator {
         return amountElements;
     }
 
-    private void createTaskElementCell(int i, String value, Row row){
+    private void createTaskElementCell(int i, String value, Row row) {
         Cell cell = row.createCell(i);
         Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);

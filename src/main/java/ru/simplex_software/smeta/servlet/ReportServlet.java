@@ -6,8 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
 import ru.simplex_software.smeta.dao.TaskDAO;
+import ru.simplex_software.smeta.dao.TaskFilterDAO;
+import ru.simplex_software.smeta.dao.TaskFilterImplDAO;
 import ru.simplex_software.smeta.excel.ReportCreator;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.model.TaskFilter;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -24,9 +27,14 @@ public class ReportServlet implements HttpRequestHandler {
     @Autowired
     private TaskDAO taskDAO;
 
+    @Autowired
+    private TaskFilterImplDAO taskFilterImplDAO;
+
+    @Autowired
+    private TaskFilterDAO taskFilterDAO;
+
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        final List<Task> tasks = taskDAO.findAllTasks();
         final ReportCreator reportCreator = new ReportCreator();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -35,9 +43,11 @@ public class ReportServlet implements HttpRequestHandler {
         ServletOutputStream outputStream = response.getOutputStream();
 
         try {
-            reportCreator.copyFromTemplateTask(tasks);
+            TaskFilter filter = taskFilterDAO.findAllFilters().get(0);
+            final List<Task> taskFilterList = taskFilterImplDAO.findTasksByFilter(filter);
+            reportCreator.copyFromTemplateTask(taskFilterList);
             reportCreator.copyFromTemplateFooter();
-            reportCreator.copyFromTemplateHeader(taskDAO.findAllTasks());
+            reportCreator.copyFromTemplateHeader(taskFilterList);
             reportCreator.write(outputStream);
         } catch (InvalidFormatException e) {
            LOG.error(e.getMessage());
