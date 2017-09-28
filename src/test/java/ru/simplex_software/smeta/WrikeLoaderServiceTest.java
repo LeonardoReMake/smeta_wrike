@@ -35,9 +35,6 @@ public class WrikeLoaderServiceTest {
     @Resource
     private MaterialDAO materialDAO;
 
-    @Resource
-    private WrikeLoaderService wrikeLoaderService;
-
     @Test
     public void loadWorksAndMaterials() throws Exception {
 

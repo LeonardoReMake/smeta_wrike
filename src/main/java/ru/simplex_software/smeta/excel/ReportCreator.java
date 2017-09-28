@@ -122,7 +122,7 @@ public class ReportCreator {
                                                     ConstantsOfReport.ROW_FOR_VAT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellVAT.setCellValue(estimateWithVAT + ConstantsOfReport.RU_STRING);
+        cellVAT.setCellValue(decimalFormat.format(estimateWithVAT) + ConstantsOfReport.RU_STRING);
 
         final Cell cellDeparture = addCellType(ConstantsOfReport.AMOUNT_DEPARTURES,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
@@ -130,7 +130,7 @@ public class ReportCreator {
                                                     ConstantsOfReport.AMOUNT_DEPARTURES,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellDeparture.setCellValue(departures + ConstantsOfReport.RU_STRING);
+        cellDeparture.setCellValue(decimalFormat.format(departures) + ConstantsOfReport.RU_STRING);
 
         final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.STRING);
@@ -138,7 +138,7 @@ public class ReportCreator {
                                                     ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellEstimateWithVAT.setCellValue(estimateWithoutVAT);
+        cellEstimateWithVAT.setCellValue(decimalFormat.format(estimateWithoutVAT));
     }
 
     private double getAmountDepartures(List<Task> tasks) {
