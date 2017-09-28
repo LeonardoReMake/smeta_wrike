@@ -20,6 +20,8 @@ import ru.simplex_software.smeta.model.Work;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +35,10 @@ public class ReportCreator {
     private static final String TEMPLATE_TASKS_PATH = "template/task_template.xlsx";
 
     private static final String TEMPLATE_FOOTER_PATH = "template/footer_template.xlsx";
+
+    private static final double AMOUNT_DEPARTURES = 600;
+
+    private final DecimalFormat decimalFormat = new DecimalFormat("###,###.###");
 
     private final int[] onePartCells = {1, 2, 3, 4, 5};
 
@@ -62,7 +68,7 @@ public class ReportCreator {
         Date dateOfReport = null;
 
         double simpleVAT = 0.18;
-        double departures = amountDepartures(taskList);
+        double departures = getAmountDepartures(taskList);
         double estimateWithVAT = departures * simpleVAT;
         double estimateWithoutVAT = estimateWithVAT + departures;
 
@@ -73,7 +79,6 @@ public class ReportCreator {
         final String localCalculation = "Локальный сметный расчет №" + numberNumber + contract;
         final String estimatePeriod = "Отчетный период с " + dateBegin + " июня 2017г. по " + dateEnd
                                                                                         + " июня 2017г.";
-
         copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
@@ -84,7 +89,7 @@ public class ReportCreator {
                                                     ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellEstimateAmount.setCellValue(getAmountsOfEstimate(workAmountList, materialAmountList) + ConstantsOfReport.RU_STRING);
+        cellEstimateAmount.setCellValue(decimalFormat.format(getAmountsOfEstimate(workAmountList, materialAmountList)) + ConstantsOfReport.RU_STRING);
 
         final Cell cellContract = addCellType(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
                 ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
@@ -114,35 +119,40 @@ public class ReportCreator {
         final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT,
-                ConstantsOfReport.ROW_FOR_VAT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellVAT.setCellValue(estimateWithVAT + ConstantsOfReport.RU_STRING);
+                                                    ConstantsOfReport.ROW_FOR_VAT,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellVAT.setCellValue(decimalFormat.format(estimateWithVAT) + ConstantsOfReport.RU_STRING);
 
         final Cell cellDeparture = addCellType(ConstantsOfReport.AMOUNT_DEPARTURES,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.AMOUNT_DEPARTURES,
-                ConstantsOfReport.AMOUNT_DEPARTURES,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellDeparture.setCellValue(departures + ConstantsOfReport.RU_STRING);
+                                                    ConstantsOfReport.AMOUNT_DEPARTURES,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellDeparture.setCellValue(decimalFormat.format(departures) + ConstantsOfReport.RU_STRING);
 
         final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
+                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
-                ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellEstimateWithVAT.setCellValue(estimateWithoutVAT);
+                                                    ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+        cellEstimateWithVAT.setCellValue(decimalFormat.format(estimateWithoutVAT));
     }
 
-    private double amountDepartures(List<Task> tasks) {
-        final double price = 600;
+    private double getAmountDepartures(List<Task> tasks) {
+        final double price = AMOUNT_DEPARTURES;
         double amounts = 0;
         for (Task task : tasks) {
             amounts += task.getAmount();
         }
         return amounts * price;
+    }
+
+    private double getAmountDeparturesOnEstimate(List<Task> tasks) {
+        final double price = AMOUNT_DEPARTURES;
+        return tasks.size() * price;
     }
 
     public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
@@ -199,8 +209,9 @@ public class ReportCreator {
 
     }
 
-    public void copyFromTemplateFooter() throws InvalidFormatException {
+    public void copyFromTemplateFooter(List<Task> tasks) throws InvalidFormatException {
         final int rowPositionOfEstimate = 4;
+        final int rowPosOfEstimateWithDep = 5;
         final int maxRowPositionOfFooter = 16;
 
         copyStylesOfElement(getTemplateFooter(), freeRowPosition,
@@ -215,14 +226,24 @@ public class ReportCreator {
         Row row = sheet.getRow(freeRowPosition);
 
         final Cell cellAmountOfWorks = addCellType(row.getRowNum(),
-                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK,
-                CellType.NUMERIC);
-        cellAmountOfWorks.setCellValue(amountWorks);
+                                                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_WORK,
+                                                CellType.NUMERIC);
+        cellAmountOfWorks.setCellValue(decimalFormat.format(amountWorks));
 
         final Cell cellAmountOfMaterials = addCellType(row.getRowNum(),
-                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
+                                                CellType.NUMERIC);
+        cellAmountOfMaterials.setCellValue(decimalFormat.format(amountMaterials));
+
+        final Cell cellTotalDep = addCellType(row.getRowNum() + 1,
+                                        ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
+                                                 CellType.NUMERIC);
+        cellTotalDep.setCellValue(1 + " (1/0)");
+
+        final Cell cellAmountTotalDep = addCellType(row.getRowNum() + 2,
+                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
                 CellType.NUMERIC);
-        cellAmountOfMaterials.setCellValue(amountMaterials);
+        cellAmountTotalDep.setCellValue(decimalFormat.format(AMOUNT_DEPARTURES));
 
         double amountOfEstimate = amountMaterials + amountWorks;
 
@@ -242,8 +263,16 @@ public class ReportCreator {
                 ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
                 ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
-        cellAmountOfEstimate.setCellValue(String.valueOf(amountOfEstimate));
+        row = sheet.getRow(freeRowPosition + rowPosOfEstimateWithDep);
 
+        final Cell cellAmountOfEstimateWithDep = addCellType(row.getRowNum(),
+                                                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                CellType.NUMERIC);
+
+        double amountDep = getAmountDeparturesOnEstimate(tasks);
+
+        cellAmountOfEstimate.setCellValue(decimalFormat.format(amountOfEstimate));
+        cellAmountOfEstimateWithDep.setCellValue(decimalFormat.format(amountDep));
     }
 
     public void write(OutputStream fileOut) {
@@ -277,7 +306,7 @@ public class ReportCreator {
 
             copyStylesForElements(cellStart, cellEnd, tRow, row, tSheet);
             if (i == ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK) {
-                row.getCell(numericCell).setCellValue(worksAmount);
+                row.getCell(numericCell).setCellValue(decimalFormat.format(worksAmount));
             }
             workRowPosition++;
         }
@@ -290,14 +319,13 @@ public class ReportCreator {
         final int numericCell = 10;
 
         final int departures = 1;
-        final double amountDepartures = 600;
 
         final String stateDepartures = " (1/0)";
-        final String stateAmountDepartures = " (600,00/0,00)";
+        final String stateAmountDepartures = " (" + AMOUNT_DEPARTURES + ",00/0,00)";
 
-        final String[] totals = { String.valueOf(materialsAmount),
-                                  departures + stateDepartures,
-                                  amountDepartures + stateAmountDepartures };
+        final String[] totals = { decimalFormat.format(materialsAmount),
+                                  decimalFormat.format(departures) + stateDepartures,
+                                  AMOUNT_DEPARTURES + stateAmountDepartures };
 
         for (int i = ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK;
                 i < ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK + 3; i++) {
@@ -406,11 +434,28 @@ public class ReportCreator {
     }
 
     private void createTaskElementCell(int i, String value, Row row) {
-        Cell cell = row.createCell(i);
-        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
-        Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);
-        copyCell(tCell, cell);
-        cell.setCellValue(value);
+        final int workBeginI = 2;
+        final int workEndI = 6;
+        final int materialBeginI = 7;
+        final int materialEndI = 11;
+
+        if (row != null) {
+            final Cell cell = row.createCell(i);
+            final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
+            final Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);
+            copyCell(tCell, cell);
+            if ( value != null && (checkNumericFormatForElement(i,workBeginI, workEndI) ||
+                                   checkNumericFormatForElement(i, materialBeginI, materialEndI))) {
+                BigDecimal val = new BigDecimal(value);
+                cell.setCellValue(decimalFormat.format(val));
+            } else {
+                cell.setCellValue(value);
+            }
+        }
+    }
+
+    private boolean checkNumericFormatForElement(int columnI, int elementBeginI, int elementEndI) {
+        return ((columnI > elementBeginI && columnI < elementEndI));
     }
 
     private Cell addCellType(int rowNum, int cellNum, CellType cellType) {

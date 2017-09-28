@@ -24,7 +24,7 @@ public class ConstantsOfReport {
 
     public static final int CELL_NUM_AMOUNT_FOR_WORK = 5;
 
-    public static final int CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE = 10;
+    public static final int CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE = 9;
 
     public static final int ROW_POSITION_AMOUNT_FOR_WORK = 2;
 

@@ -342,7 +342,8 @@ public class WorkAndMaterialViewModel {
     public void findNewTemplate() {
         if (!canFromTemplate) {
             List<Template> templateList = templateDAO.findAllTemplates();
-            templateListModel = new ListModelList<>(templateList);
+            templateListModel.clear();
+            templateListModel.addAll(templateList);
         }
 
         toTemplate = !toTemplate;
@@ -399,7 +400,7 @@ public class WorkAndMaterialViewModel {
             isRemove = true;
             for (Work innerWork : taskWorkListModel) {
                 if (innerWork.getName().equals(outerWork.getName())
-                        && innerWork.getUnitPrice().equals(outerWork.getUnitPrice()) && isRemove) {
+                        && innerWork.getUnits().equals(outerWork.getUnits()) && isRemove) {
                     innerWork.setQuantity(innerWork.getQuantity() + outerWork.getQuantity());
                     innerWork.setAmount(innerWork.getQuantity() * innerWork.getUnitPrice());
                     taskWorkListModel.notifyChange(innerWork);
@@ -421,7 +422,7 @@ public class WorkAndMaterialViewModel {
             isRemove = true;
             for (Material innerMaterial : taskMaterialListModel) {
                 if (innerMaterial.getName().equals(outerMaterial.getName())
-                        && innerMaterial.getUnitPrice().equals(outerMaterial.getUnitPrice()) && isRemove) {
+                        && innerMaterial.getUnits().equals(outerMaterial.getUnits()) && isRemove) {
                     innerMaterial.setQuantity(innerMaterial.getQuantity() + outerMaterial.getQuantity());
                     innerMaterial.setAmount(innerMaterial.getQuantity() * innerMaterial.getUnitPrice());
                     taskMaterialListModel.notifyChange(innerMaterial);

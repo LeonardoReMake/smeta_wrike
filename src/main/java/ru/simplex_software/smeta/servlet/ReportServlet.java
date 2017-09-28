@@ -46,7 +46,7 @@ public class ReportServlet implements HttpRequestHandler {
             TaskFilter filter = taskFilterDAO.findAllFilters().get(0);
             final List<Task> taskFilterList = taskFilterImplDAO.findTasksByFilter(filter);
             reportCreator.copyFromTemplateTask(taskFilterList);
-            reportCreator.copyFromTemplateFooter();
+            reportCreator.copyFromTemplateFooter(taskFilterList);
             reportCreator.copyFromTemplateHeader(taskFilterList);
             reportCreator.write(outputStream);
         } catch (InvalidFormatException e) {
