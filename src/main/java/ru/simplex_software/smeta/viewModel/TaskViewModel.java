@@ -5,14 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.zkoss.bind.annotation.AfterCompose;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.bind.annotation.ContextParam;
-import org.zkoss.bind.annotation.ContextType;
 import org.zkoss.bind.annotation.NotifyChange;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.InputEvent;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.select.annotation.WireVariable;
 import ru.simplex_software.smeta.WrikeLoaderService;
@@ -31,6 +28,7 @@ import ru.simplex_software.smeta.model.Work;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -112,6 +110,8 @@ public class TaskViewModel {
 
         taskListModel = new TaskListModel(filter, taskDAO, taskFilterImplDAO);
         refreshList();
+
+        cities = cityDAO.findAll();
     }
 
     @Command
@@ -140,17 +140,6 @@ public class TaskViewModel {
     }
 
     @Command
-    @NotifyChange({"cities"})
-    public void cityTyped(@ContextParam(ContextType.TRIGGER_EVENT) InputEvent event) {
-        String typed = event.getValue();
-        if (typed != null && typed.length() > 2) {
-            cities = cityDAO.findLikeNameCaseInsensitive("%"+typed+"%");
-        } else {
-            cities = null;
-        }
-    }
-
-    @Command
     @NotifyChange({"taskListModel"})
     public void applyFilter() {
         taskFilterDAO.saveOrUpdate(filter);
@@ -163,6 +152,7 @@ public class TaskViewModel {
         filter.setCity(null);
         filter.setStartDate(null);
         filter.setEndDate(null);
+        filter.setCities(new HashSet<>());
         taskFilterDAO.saveOrUpdate(filter);
     }
 

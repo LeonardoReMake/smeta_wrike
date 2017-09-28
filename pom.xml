@@ -239,6 +239,11 @@
           <groupId>org.zkoss.zk</groupId>
           <artifactId>zul</artifactId>
         </exclusion>
+
+        <exclusion>
+          <groupId>org.hibernate.javax.persistence</groupId>
+          <artifactId>hibernate-jpa-2.0-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -361,6 +366,13 @@
       <artifactId>flyway-core</artifactId>
       <version>4.2.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>javax.persistence</groupId>
+      <artifactId>persistence-api</artifactId>
+      <version>1.0</version>
+    </dependency>
+
 
   </dependencies>
 

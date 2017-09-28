@@ -16,4 +16,7 @@ public interface CityDAO extends Dao<City, Long> {
 
     @Finder(query = "from City where lower(name) like lower(:city)")
     List<City> findLikeNameCaseInsensitive(@Named("city") String city);
+
+    @Finder(query = "from City")
+    List<City> findAll();
 }
