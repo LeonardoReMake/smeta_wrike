@@ -20,6 +20,7 @@ import ru.simplex_software.smeta.model.Work;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +36,9 @@ public class ReportCreator {
 
     private static final String TEMPLATE_FOOTER_PATH = "template/footer_template.xlsx";
 
-    private final DecimalFormat decimalFormat = new DecimalFormat("0,000.00");
+    private static final double AMOUNT_DEPARTURES = 600;
+
+    private final DecimalFormat decimalFormat = new DecimalFormat("###,###.###");
 
     private final int[] onePartCells = {1, 2, 3, 4, 5};
 
@@ -139,7 +142,7 @@ public class ReportCreator {
     }
 
     private double getAmountDepartures(List<Task> tasks) {
-        final double price = 600;
+        final double price = AMOUNT_DEPARTURES;
         double amounts = 0;
         for (Task task : tasks) {
             amounts += task.getAmount();
@@ -148,7 +151,7 @@ public class ReportCreator {
     }
 
     private double getAmountDeparturesOnEstimate(List<Task> tasks) {
-        final double price = 600;
+        final double price = AMOUNT_DEPARTURES;
         return tasks.size() * price;
     }
 
@@ -233,14 +236,14 @@ public class ReportCreator {
         cellAmountOfMaterials.setCellValue(decimalFormat.format(amountMaterials));
 
         final Cell cellTotalDep = addCellType(row.getRowNum() + 1,
-                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
-                CellType.NUMERIC);
+                                        ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
+                                                 CellType.NUMERIC);
         cellTotalDep.setCellValue(1 + " (1/0)");
 
         final Cell cellAmountTotalDep = addCellType(row.getRowNum() + 2,
                 ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
                 CellType.NUMERIC);
-        cellAmountTotalDep.setCellValue(600);
+        cellAmountTotalDep.setCellValue(decimalFormat.format(AMOUNT_DEPARTURES));
 
         double amountOfEstimate = amountMaterials + amountWorks;
 
@@ -263,8 +266,8 @@ public class ReportCreator {
         row = sheet.getRow(freeRowPosition + rowPosOfEstimateWithDep);
 
         final Cell cellAmountOfEstimateWithDep = addCellType(row.getRowNum(),
-                            ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
-                            CellType.NUMERIC);
+                                                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                CellType.NUMERIC);
 
         double amountDep = getAmountDeparturesOnEstimate(tasks);
 
@@ -316,14 +319,13 @@ public class ReportCreator {
         final int numericCell = 10;
 
         final int departures = 1;
-        final double amountDepartures = 600;
 
         final String stateDepartures = " (1/0)";
-        final String stateAmountDepartures = " (600,00/0,00)";
+        final String stateAmountDepartures = " (" + AMOUNT_DEPARTURES + ",00/0,00)";
 
-        final String[] totals = { String.valueOf(materialsAmount),
-                                  departures + stateDepartures,
-                                  amountDepartures + stateAmountDepartures };
+        final String[] totals = { decimalFormat.format(materialsAmount),
+                                  decimalFormat.format(departures) + stateDepartures,
+                                  AMOUNT_DEPARTURES + stateAmountDepartures };
 
         for (int i = ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK;
                 i < ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK + 3; i++) {
@@ -432,18 +434,34 @@ public class ReportCreator {
     }
 
     private void createTaskElementCell(int i, String value, Row row) {
+        final int workBeginI = 2;
+        final int workEndI = 6;
+        final int materialBeginI = 7;
+        final int materialEndI = 11;
+
         if (row != null) {
-            Cell cell = row.createCell(i);
-            Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
-            Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);
+            final Cell cell = row.createCell(i);
+            final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
+            final Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);
             copyCell(tCell, cell);
-            cell.setCellValue(value);
+            if ( value != null && (checkNumericFormatForElement(i,workBeginI, workEndI) ||
+                                   checkNumericFormatForElement(i, materialBeginI, materialEndI))) {
+                BigDecimal val = new BigDecimal(value);
+                cell.setCellValue(decimalFormat.format(val));
+            } else {
+                cell.setCellValue(value);
+            }
         }
+    }
+
+    private boolean checkNumericFormatForElement(int columnI, int elementBeginI, int elementEndI) {
+        return ((columnI > elementBeginI && columnI < elementEndI));
     }
 
     private Cell addCellType(int rowNum, int cellNum, CellType cellType) {
         Row row = sheet.getRow(rowNum);
         Cell cell = row.getCell(cellNum);
+        cell.setCellType(cellType);
         return cell;
     }
 

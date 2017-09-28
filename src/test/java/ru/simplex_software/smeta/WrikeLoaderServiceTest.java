@@ -2,6 +2,8 @@ package ru.simplex_software.smeta;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -22,6 +24,8 @@ import java.util.List;
 @Rollback
 public class WrikeLoaderServiceTest {
 
+    private static final Logger LOG = LoggerFactory.getLogger(WrikeLoaderServiceTest.class);
+
     @Resource
     private TaskDAO taskDAO;
 
@@ -31,14 +35,21 @@ public class WrikeLoaderServiceTest {
     @Resource
     private MaterialDAO materialDAO;
 
+    @Resource
+    private WrikeLoaderService wrikeLoaderService;
+
     @Test
-    public void loadNewTasks() throws Exception {
+    public void loadWorksAndMaterials() throws Exception {
 
         final List<Task> newTasks = taskDAO.findAllTasks();
 
         for (Task task : newTasks) {
             createNewWorks(task);
             createNewMaterials(task);
+            taskDAO.saveOrUpdate(task);
+            LOG.debug("test data saved. All works and materials in database now: {}",
+                       workDAO.findByTask(task),
+                       materialDAO.findByTasks(task));
         }
     }
 
