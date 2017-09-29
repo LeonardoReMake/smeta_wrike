@@ -20,8 +20,8 @@ public class TaskFilter extends LongIdPersistentEntity{
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "filter_city",
-            joinColumns = {@JoinColumn(name = "taskfilter_id")},
-            inverseJoinColumns = {@JoinColumn(name = "city_id")})
+               joinColumns = {@JoinColumn(name = "taskfilter_id")},
+               inverseJoinColumns = {@JoinColumn(name = "city_id")})
     private Set<City> cities = new HashSet<>();
 
     private Date startDate;
