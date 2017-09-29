@@ -435,6 +435,13 @@
       <properties>
         <profile.selected>development</profile.selected>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <version>1.4.193</version>
+        </dependency>
+      </dependencies>
     </profile>
 
 
@@ -449,6 +456,7 @@
           <artifactId>postgresql</artifactId>
           <version>42.1.1</version>
         </dependency>
+
         <dependency>
           <groupId>org.flywaydb</groupId>
           <artifactId>flyway-core</artifactId>

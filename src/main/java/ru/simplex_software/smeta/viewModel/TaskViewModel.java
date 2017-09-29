@@ -6,6 +6,7 @@ import org.zkoss.bind.annotation.AfterCompose;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.NotifyChange;
+import org.zkoss.idom.Item;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -154,6 +155,15 @@ public class TaskViewModel {
         filter.setEndDate(null);
         filter.setCities(new HashSet<>());
         taskFilterDAO.saveOrUpdate(filter);
+    }
+
+    @Command
+    public void selectCity(@BindingParam("checked") boolean isPicked, @BindingParam("selectedCity")City city){
+        if (isPicked){
+            getFilter().getCities().add(city);
+        }else{
+            getFilter().getCities().remove(city);
+        }
     }
 
     private void refreshList() {

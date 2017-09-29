@@ -4,12 +4,15 @@
     xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
     <window	width="100%" height="100%" title="Список задач"
                viewModel="@id('taskVM') @init('ru.simplex_software.smeta.viewModel.TaskViewModel')">
+
         <vbox>
+
             <listbox>
                 <listhead>
                     <listheader hflex="min"/>
                     <listheader />
                 </listhead>
+
                 <listitem>
                     <listcell label="Город" />
                     <listcell>
@@ -24,14 +27,15 @@
                                 <!--<comboitem label="@load(city.name)"/>-->
                             <!--</template>-->
                         <!--</chosenbox>-->
-                        <listbox model="@load(taskVM.cities)" checkmark="true" multiple="true" rows="3" selectedItems="@bind(taskVM.filter.cities)">
-                            <listhead>
-                                <listheader label="Название города" />
-                            </listhead>
-                            <template name="model" var="city">
-                                <listitem label="@load(city.name)"/>
+
+                        <!--https://www.zkoss.org/wiki/ZK_Developer%27s_Reference/MVVM/Data_Binding/Collection_and_Selection#Custom_Multiple_Selections-->
+                        <hlayout id="vlayout" children="@load(taskVM.cities)">
+                            <template name="children">
+                                <checkbox label="@load(each.name)"
+                                          onCheck="@command('selectCity', checked=self.checked, selectedCity=each)">
+                                </checkbox>
                             </template>
-                        </listbox>
+                        </hlayout>
                     </listcell>
                 </listitem>
                 <listitem>
