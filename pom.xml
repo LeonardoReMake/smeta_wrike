@@ -497,6 +497,13 @@
       <properties>
         <profile.selected>development-mem</profile.selected>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.h2database</groupId>
+          <artifactId>h2</artifactId>
+          <version>1.4.193</version>
+        </dependency>
+      </dependencies>
     </profile>
 
   </profiles>
