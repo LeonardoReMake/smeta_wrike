@@ -17,6 +17,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
@@ -45,12 +47,29 @@ public class ReportServlet implements HttpRequestHandler {
         try {
             TaskFilter filter = taskFilterDAO.findAllFilters().get(0);
             final List<Task> taskFilterList = taskFilterImplDAO.findTasksByFilter(filter);
+
+            setDeparture(taskFilterList);
             reportCreator.copyFromTemplateTask(taskFilterList);
-            reportCreator.copyFromTemplateFooter(taskFilterList);
             reportCreator.copyFromTemplateHeader(taskFilterList);
+            reportCreator.copyFromTemplateFooter(taskFilterList);
             reportCreator.write(outputStream);
         } catch (InvalidFormatException e) {
            LOG.error(e.getMessage());
+        }
+    }
+
+    private void setDeparture(List<Task> taskFilterList) {
+        Task t;
+        t= taskFilterList.get(0);
+        t.setDeparture(true);
+        if (t.getCompletedDate() != null) {
+            LocalDateTime toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
+            for (Task task : taskFilterList.subList(1, taskFilterList.size())) {
+                if (task.getCompletedDate().isAfter(toDate)) {
+                    t = task; t.setDeparture(true);
+                    toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
+                }
+            }
         }
     }
 

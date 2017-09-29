@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -16,7 +18,6 @@ import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
 
 import javax.annotation.Resource;
-import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
@@ -35,23 +36,17 @@ public class WrikeLoaderServiceTest {
     @Resource
     private MaterialDAO materialDAO;
 
+    @Resource
+    private WrikeLoaderService wrikeLoaderService;
+
     @Test
     public void loadWorksAndMaterials() throws Exception {
-
-        final List<Task> newTasks = taskDAO.findAllTasks();
-
-        for (Task task : newTasks) {
-            createNewWorks(task);
-            createNewMaterials(task);
-            taskDAO.saveOrUpdate(task);
-            LOG.debug("test data saved. All works and materials in database now: {}",
-                       workDAO.findByTask(task),
-                       materialDAO.findByTasks(task));
-        }
+        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        context.registerShutdownHook();
     }
 
-    private void createNewWorks(Task task) throws Exception {
-        for (int i = 0; i < 5; i++) {
+    private void createNewWorks(Task task, int n) throws Exception {
+        for (int i = 0; i < n; i++) {
             final Work work = new Work();
             work.setName("Замена замка мебельного");
             work.setUnits("шт");
@@ -64,8 +59,8 @@ public class WrikeLoaderServiceTest {
         }
     }
 
-    private void createNewMaterials(Task task) throws Exception {
-        for (int i = 0; i < 5; i++) {
+    private void createNewMaterials(Task task, int n) throws Exception {
+        for (int i = 0; i < n; i++) {
             final Material material = new Material();
             material.setName("Замена замка мебельного");
             material.setUnits("шт");

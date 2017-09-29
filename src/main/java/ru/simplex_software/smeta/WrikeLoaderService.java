@@ -9,9 +9,7 @@ import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
 import ru.simplex_software.smeta.model.City;
-import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
-import ru.simplex_software.smeta.model.Work;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -36,6 +34,9 @@ public class WrikeLoaderService {
     @Resource
     private CityDAO cityDAO;
 
+    @Resource
+    private WrikeLoaderService wrikeLoaderService;
+
     public void loadNewTasks() {
         List<Task> taskInDb = taskDAO.findAllTasks();
 
@@ -55,39 +56,9 @@ public class WrikeLoaderService {
                 parseTaskTitle(task);
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
                 taskDAO.saveOrUpdate(task);
-//                createNewWorks(task);
-//                createNewMaterials(task);
             }
         } else {
             LOG.info("No new tasks");
-        }
-    }
-
-    public void createNewWorks(Task task) {
-        for (int i = 0; i < 5; i++) {
-            final Work work = new Work();
-            work.setName("Замена замка мебельного");
-            work.setUnits("шт");
-            work.setQuantity(3d);
-            work.setUnitPrice(150d);
-            work.setAmount(450d);
-            work.setTask(task);
-
-            workDAO.saveOrUpdate(work);
-        }
-    }
-
-    public void createNewMaterials(Task task) {
-        for (int i = 0; i < 5; i++) {
-            final Material material = new Material();
-            material.setName("Замена замка мебельного");
-            material.setUnits("шт");
-            material.setQuantity(3d);
-            material.setUnitPrice(150d);
-            material.setAmount(450d);
-            material.setTask(task);
-
-            materialDAO.saveOrUpdate(material);
         }
     }
 

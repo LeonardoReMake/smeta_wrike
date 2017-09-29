@@ -9,7 +9,7 @@ public class ReportCreatorTest {
 
     @Test
     public void checkDecimalType() {
-        DecimalFormat df = new DecimalFormat("00.00");
+        DecimalFormat df = new DecimalFormat("###,###.###");
         System.out.println("df.format() = " + df.format(Math.PI*100000000000000l));
     }
 

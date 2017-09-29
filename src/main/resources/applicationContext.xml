@@ -93,7 +93,6 @@
     </bean>
 
     <bean id="wrikeTaskDAO" class="ru.simplex_software.smeta.dao.WrikeTaskDaoImpl" />
-    <bean id="wrikeLoader" class="ru.simplex_software.smeta.WrikeLoaderService" />
     <bean id="reportServlet" class="ru.simplex_software.smeta.servlet.ReportServlet" />
 
 </beans>

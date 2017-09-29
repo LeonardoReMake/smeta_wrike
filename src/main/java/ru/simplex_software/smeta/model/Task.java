@@ -73,6 +73,9 @@ public class Task extends LongIdPersistentEntity {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime completedDate;
 
+    @Transient
+    private boolean departure;
+
     public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
         this.name = name;
@@ -197,5 +200,13 @@ public class Task extends LongIdPersistentEntity {
 
     public void setCompletedDate(LocalDateTime completedDate) {
         this.completedDate = completedDate;
+    }
+
+    public boolean isDeparture() {
+        return departure;
+    }
+
+    public void setDeparture(boolean departure) {
+        this.departure = departure;
     }
 }

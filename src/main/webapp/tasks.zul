@@ -73,7 +73,7 @@
                         <button label="@bind((task.filled) ? 'Редактировать' : 'Заполнить')" onClick="@command(taskVM.getWorksAndMaterials(task))"/>
                     </listcell>
                     <listcell>
-                        <label value="@bind(task.amount)"/>
+                        <label value="@bind(task.amount) @converter('formatedNumber', format='###,###.###')"/>
                     </listcell>
                 </listitem>
             </template>
