@@ -18,6 +18,9 @@ import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.Work;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
@@ -71,6 +74,13 @@ public class WrikeLoaderServiceTest {
 
             materialDAO.saveOrUpdate(material);
         }
+    }
+
+    @Test
+    public void testDateReport() throws ParseException {
+        final Date dateBegin = new SimpleDateFormat("yyyy-MM-dd").parse(String.valueOf(new Date()));
+        System.out.println(dateBegin
+        );
     }
 
 }

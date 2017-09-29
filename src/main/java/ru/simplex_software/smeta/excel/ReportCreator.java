@@ -15,16 +15,21 @@ import org.slf4j.LoggerFactory;
 import ru.simplex_software.smeta.model.Element;
 import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ReportCreator {
 
@@ -70,10 +75,10 @@ public class ReportCreator {
         sheet.setDisplayGridlines(false);
     }
 
-    public void copyFromTemplateHeader(List<Task> taskList) throws InvalidFormatException {
+    public void copyFromTemplateHeader(List<Task> taskList, TaskFilter taskFilter) throws InvalidFormatException, ParseException {
+        template = getTemplateHeader();
         int numberNumber = 0;
         int numberOfReport = 0;
-        Date dateOfReport = null;
 
         final double simpleVAT = 0.18;
         final double departures = getTotalAmount(taskList);
@@ -82,13 +87,17 @@ public class ReportCreator {
         final double estimateWithVAT = vat + estimateWithoutVAT + departures;
         estimateWithoutVAT = totalAmountDepartures;
 
-        Date dateBegin = null;
-        Date dateEnd = null;
+        final Date dateBegin = new Date();
+        final Date dateEnd = taskFilter.getEndDate();
+        final Locale russianLocale = new Locale.Builder().setLanguage("ru").build();
 
-        final String contract = " к Договору подряда №" + numberOfReport + " от "  + dateOfReport;
-        final String localCalculation = "Локальный сметный расчет №" + numberNumber + contract;
-        final String estimatePeriod = "Отчетный период с " + dateBegin + " июня 2017г. по " + dateEnd
-                                                                                        + " июня 2017г.";
+        final String monthBegin = DateFormat.getDateInstance(SimpleDateFormat.LONG, russianLocale).format(dateBegin);
+        final String monthEnd = DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateEnd);
+
+        final String contract = " к Договору подряда №" + numberOfReport + " " + monthBegin;
+        final String localCalculation = "Локальный сметный расчет № " + numberNumber + contract;
+        final String estimatePeriod = "Отчетный период с " + monthBegin +  " по " + monthEnd;
+
         copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
                 ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
@@ -103,7 +112,8 @@ public class ReportCreator {
         cellContract.setCellValue(contract);
 
         final Cell cellLocalEstimate = addCellType(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
-                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
+                                                   ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                   CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
                                                     ConstantsOfReport.ROW_FOR_LOCAL_ESTIMATE,
                                                     ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
@@ -111,11 +121,13 @@ public class ReportCreator {
         cellLocalEstimate.setCellValue(localCalculation);
 
         final Cell cellEstimatePeriod = addCellType(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
-                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK, CellType.STRING);
-        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
-                                                    ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
                                                     ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
+                                                    CellType.STRING);
+
+        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                ConstantsOfReport.ROW_FOR_ESTIMATE_PERIOD,
+                ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                ConstantsOfReport.CELL_NUM_END_FOR_TITLE)));
         cellEstimatePeriod.setCellValue(estimatePeriod);
 
         /*строки с суммами*/
@@ -125,19 +137,19 @@ public class ReportCreator {
                                                     CellType.NUMERIC);
 
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                                                    ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
         cellEstimateAmount.setCellValue(decimalFormat.format(getAmountsOfEstimate(workAmountList, materialAmountList))
                                         + ConstantsOfReport.RU_STRING);
 
         final Cell cellDeparture = addCellType(ConstantsOfReport.AMOUNT_DEPARTURES,
-                                                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                                                CellType.NUMERIC);
+                                               ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                               CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.AMOUNT_DEPARTURES,
-                ConstantsOfReport.AMOUNT_DEPARTURES,
-                ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                                                    ConstantsOfReport.AMOUNT_DEPARTURES,
+                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
         cellDeparture.setCellValue(decimalFormat.format(estimateWithoutVAT) + ConstantsOfReport.RU_STRING);
 
         final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
@@ -166,21 +178,19 @@ public class ReportCreator {
         return amounts;
     }
 
+    /* Создание списков заданий. */
     public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
         template = getTemplateTasks();
-        Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
-
-        freeRowPosition = 12;
-
+        final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         int workRowPosition;
         int materialRowPosition;
+        freeRowPosition = 12;
 
         for (Task task : tasks) {
             double worksAmount = getAmount(task.getWorks());
             double materialsAmount = getAmount(task.getMaterials());
 
             Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
-
             Row row = sheet.createRow(freeRowPosition);
             workAmountList.add(worksAmount);
             materialAmountList.add(materialsAmount);
@@ -188,9 +198,7 @@ public class ReportCreator {
             sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
                                                         ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
                                                         ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-
             createOneTaskFromTemplate(row, tRow, task);
-
             workRowPosition = freeRowPosition;
             materialRowPosition = freeRowPosition;
 
@@ -213,11 +221,9 @@ public class ReportCreator {
                     materialRowPosition++;
                 }
             }
-
             freeRowPosition = createAmountForWorks(workRowPosition, tSheet, worksAmount);
             createAmountForMaterials(materialRowPosition, tSheet, materialsAmount, tasks);
         }
-
 
     }
 
@@ -242,16 +248,16 @@ public class ReportCreator {
                                                     CellType.NUMERIC);
         cellAmountOfWorks.setCellValue(decimalFormat.format(amountWorks));
 
-        final Cell cellAmountOfMaterials = addCellType(row.getRowNum(),
+        final Cell cellAmountOfMaterials = addCellType( row.getRowNum(),
                                                 ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
-                                                CellType.NUMERIC);
+                                                         CellType.NUMERIC);
         cellAmountOfMaterials.setCellValue(decimalFormat.format(amountMaterials));
 
         int totalDep = (int) (totalAmountDepartures / ONE_DEPARTURE);
 
-        final Cell cellTotalDep = addCellType(row.getRowNum() + 1,
-                                        ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
-                                                 CellType.NUMERIC);
+        final Cell cellTotalDep = addCellType(row.getRowNum() + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
+                                              ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
+                                                      CellType.NUMERIC);
         cellTotalDep.setCellValue( totalDep + " (" + totalDep + "/0)");
 
         final Cell cellAmountTotalDep = addCellType(row.getRowNum() + 2,
@@ -264,16 +270,16 @@ public class ReportCreator {
         row = sheet.getRow(freeRowPosition + rowPositionOfEstimate);
 
         final Cell cellAmountOfEstimate = addCellType(row.getRowNum(),
-                ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
-                CellType.NUMERIC);
+                                                        ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
+                                                        CellType.NUMERIC);
 
         sheet.addMergedRegion((new CellRangeAddress(row.getRowNum(),
-                row.getRowNum(),
-                ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
-                ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
+                                                    row.getRowNum(),
+                                                    ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
+                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
-        sheet.addMergedRegion((new CellRangeAddress(row.getRowNum() + 1,
-                                                    row.getRowNum() + 1,
+        sheet.addMergedRegion((new CellRangeAddress(row.getRowNum() + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
+                                                    row.getRowNum() + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
                                                             ConstantsOfReport.CELL_NUM_END_FOR_TITLE,
                                                             ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
@@ -294,12 +300,12 @@ public class ReportCreator {
             wb.write(fileOut);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
-        }
-
-        try {
-            fileOut.close();
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+        }finally {
+            try {
+                fileOut.close();
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -411,15 +417,14 @@ public class ReportCreator {
             } else {
                 row = sheet.getRow(materialRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
             }
-            final String[] names = {material.getName(), material.getUnits(),
-                                    String.valueOf(material.getQuantity()),
-                                    String.valueOf(material.getUnitPrice()),
-                                    String.valueOf(materialAmount)};
+            final String[] names = { material.getName(), material.getUnits(),
+                                     String.valueOf(material.getQuantity()),
+                                     String.valueOf(material.getUnitPrice()),
+                                     String.valueOf(materialAmount) };
             createTaskCells(twoPartCells, names, row);
             materialRowPosition++;
         }
         return materialRowPosition;
-
     }
 
     private void copyStylesForElements(int cellStart, int cellEnd, Row tRow,
@@ -433,7 +438,8 @@ public class ReportCreator {
     }
 
     private void copyStylesOfElement(Workbook template, int startRow, int endRow,
-                                     int startCell, int endCell, int rowShift, boolean isHeader) {
+                                     int startCell,     int endCell,  int rowShift,
+                                     boolean isHeader) {
         final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         int rowI;
         for (rowI = startRow; rowI < endRow; rowI++) {
@@ -453,7 +459,8 @@ public class ReportCreator {
         }
     }
 
-    private double getAmountsOfEstimate(List<Double> worksAmount, List<Double> materialsAmount) {
+    private double getAmountsOfEstimate(List<Double> worksAmount,
+                                        List<Double> materialsAmount) {
         return  getAmountOfElements(worksAmount) +
                 getAmountOfElements(materialsAmount);
     }
@@ -492,7 +499,7 @@ public class ReportCreator {
     }
 
     private Cell addCellType(int rowNum, int cellNum, CellType cellType) {
-        Row row = sheet.getRow(rowNum);
+        final Row row = sheet.getRow(rowNum);
         Cell cell = row.getCell(cellNum);
         cell.setCellType(cellType);
         return cell;
@@ -533,7 +540,7 @@ public class ReportCreator {
 
     private void copyCell(Cell from, Cell to) {
         if (from != null) {
-            CellStyle newCellStyle = wb.createCellStyle();
+            final CellStyle newCellStyle = wb.createCellStyle();
             newCellStyle.cloneStyleFrom(from.getCellStyle());
             newCellStyle.setBorderBottom(from.getCellStyle().getBorderBottomEnum());
             newCellStyle.setBorderLeft(from.getCellStyle().getBorderLeftEnum());

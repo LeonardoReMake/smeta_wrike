@@ -17,6 +17,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -50,11 +51,13 @@ public class ReportServlet implements HttpRequestHandler {
 
             setDeparture(taskFilterList);
             reportCreator.copyFromTemplateTask(taskFilterList);
-            reportCreator.copyFromTemplateHeader(taskFilterList);
+            reportCreator.copyFromTemplateHeader(taskFilterList, filter);
             reportCreator.copyFromTemplateFooter(taskFilterList);
             reportCreator.write(outputStream);
         } catch (InvalidFormatException e) {
            LOG.error(e.getMessage());
+        } catch (ParseException e) {
+            LOG.error(e.getMessage());
         }
     }
 

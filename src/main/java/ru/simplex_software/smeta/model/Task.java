@@ -209,4 +209,5 @@ public class Task extends LongIdPersistentEntity {
     public void setDeparture(boolean departure) {
         this.departure = departure;
     }
+
 }
