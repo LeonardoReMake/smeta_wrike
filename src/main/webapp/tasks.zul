@@ -13,12 +13,25 @@
                 <listitem>
                     <listcell label="Город" />
                     <listcell>
-                        <combobox width="100%" model="@load(taskVM.cities)" selectedItem="@bind(taskVM.filter.city)" value="@load(taskVM.filter.city.name)"
-                                  autocomplete="true" autodrop="true" buttonVisible="false" onChanging="@command('cityTyped')">
+                        <!--<combobox width="100%" model="@load(taskVM.cities)" selectedItem="@bind(taskVM.filter.city)" value="@load(taskVM.filter.city.name)"-->
+                                  <!--autocomplete="true" autodrop="true" buttonVisible="false" onChanging="@command('cityTyped')">-->
+                            <!--<template name="model" var="city">-->
+                                <!--<comboitem label="@load(city.name)"/>-->
+                            <!--</template>-->
+                        <!--</combobox>-->
+                        <!--<chosenbox width="100%" model="@load(taskVM.cities)" selectedObjects="@bind(taskVM.filter.cities)" />-->
+                            <!--<template name="model" var="city">-->
+                                <!--<comboitem label="@load(city.name)"/>-->
+                            <!--</template>-->
+                        <!--</chosenbox>-->
+                        <listbox model="@load(taskVM.cities)" checkmark="true" multiple="true" rows="3" selectedItems="@bind(taskVM.filter.cities)">
+                            <listhead>
+                                <listheader label="Название города" />
+                            </listhead>
                             <template name="model" var="city">
-                                <comboitem label="@load(city.name)"/>
+                                <listitem label="@load(city.name)"/>
                             </template>
-                        </combobox>
+                        </listbox>
                     </listcell>
                 </listitem>
                 <listitem>
@@ -38,7 +51,7 @@
                 <button label="Очистить" onClick="@command('clearFilter')" />
             </hbox>
         </vbox>
-        <listbox model="@load(taskVM.taskListModel)" mold="paging" pageSize="10">
+        <listbox model="@load(taskVM.taskListModel)" mold="paging" pageSize="10" style="overflow:auto" vflex="true">
             <listhead>
                 <listheader label="Задача"/>
                 <listheader label="Магазин"/>

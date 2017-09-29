@@ -138,9 +138,14 @@ public class WrikeLoaderService {
         List<City> cities = cityDAO.findCityForName(city);
         City taskCity;
         if (cities == null || cities.isEmpty()) {
-            taskCity = new City();
-            taskCity.setName(city);
-            cityDAO.create(taskCity);
+            List<City> citiesForPath = cityDAO.findCityForName(task.getPath());
+            if (!citiesForPath.isEmpty()) {
+                taskCity = citiesForPath.get(0);
+            } else {
+                taskCity = new City();
+                taskCity.setName(city);
+                cityDAO.create(taskCity);
+            }
         } else {
             taskCity = cities.get(0);
         }
