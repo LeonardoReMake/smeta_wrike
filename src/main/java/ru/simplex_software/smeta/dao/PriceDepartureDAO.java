@@ -6,10 +6,10 @@ import ru.simplex_software.smeta.model.PriceDeparture;
 
 import java.util.List;
 
-@AutoDAO
+//@AutoDAO
 public interface PriceDepartureDAO {
 
-    @Finder(query = "from PriceDeparture")
+    //@Finder(query = "from PriceDeparture")
     List<PriceDeparture> findAllDepartures();
 
 }
