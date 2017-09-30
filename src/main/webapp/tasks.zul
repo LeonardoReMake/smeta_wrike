@@ -31,7 +31,7 @@
                         <!--https://www.zkoss.org/wiki/ZK_Developer%27s_Reference/MVVM/Data_Binding/Collection_and_Selection#Custom_Multiple_Selections-->
                         <hlayout id="vlayout" children="@load(taskVM.cities)">
                             <template name="children">
-                                <checkbox label="@load(each.name)"
+                                <checkbox label="@load(each.name)" checked="@load(taskVM.getFilter().getCities().contains(each))"
                                           onCheck="@command('selectCity', checked=self.checked, selectedCity=each)">
                                 </checkbox>
                             </template>
