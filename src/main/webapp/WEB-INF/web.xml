@@ -65,6 +65,11 @@
   </filter-mapping>
 
   <servlet>
+    <servlet-name>redirectServlet</servlet-name>
+    <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+  </servlet>
+
+  <servlet>
     <description>ZK loader for ZUML pages</description>
     <servlet-name>zkLoader</servlet-name>
     <servlet-class>org.zkoss.zk.ui.http.DHtmlLayoutServlet</servlet-class>
@@ -105,6 +110,11 @@
   <servlet-mapping>
     <servlet-name>reportServlet</servlet-name>
     <url-pattern>/ReportXlsx</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>redirectServlet</servlet-name>
+    <url-pattern>/</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>

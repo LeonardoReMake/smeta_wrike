@@ -1,7 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zk xmlns="http://www.zkoss.org/2005/zul"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd"
->
-    <label value="It is start page" />
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
+    <window	width="100%" height="100%" title="Список задач"
+               viewModel="@id('taskVM') @init('ru.simplex_software.smeta.viewModel.TaskViewModel')">
+
+        <vbox>
+
+            <listbox>
+                <listhead>
+                    <listheader hflex="min"/>
+                    <listheader />
+                </listhead>
+
+                <listitem>
+                    <listcell label="Город" />
+                    <listcell>
+                        <!--<combobox width="100%" model="@load(taskVM.cities)" selectedItem="@bind(taskVM.filter.city)" value="@load(taskVM.filter.city.name)"-->
+                                  <!--autocomplete="true" autodrop="true" buttonVisible="false" onChanging="@command('cityTyped')">-->
+                            <!--<template name="model" var="city">-->
+                                <!--<comboitem label="@load(city.name)"/>-->
+                            <!--</template>-->
+                        <!--</combobox>-->
+                        <!--<chosenbox width="100%" model="@load(taskVM.cities)" selectedObjects="@bind(taskVM.filter.cities)" />-->
+                            <!--<template name="model" var="city">-->
+                                <!--<comboitem label="@load(city.name)"/>-->
+                            <!--</template>-->
+                        <!--</chosenbox>-->
+
+                        <!--https://www.zkoss.org/wiki/ZK_Developer%27s_Reference/MVVM/Data_Binding/Collection_and_Selection#Custom_Multiple_Selections-->
+                        <hlayout id="vlayout" children="@load(taskVM.cities)">
+                            <template name="children">
+                                <checkbox label="@load(each.name)" checked="@load(taskVM.getFilter().getCities().contains(each))"
+                                          onCheck="@command('selectCity', checked=self.checked, selectedCity=each)">
+                                </checkbox>
+                            </template>
+                        </hlayout>
+                    </listcell>
+                </listitem>
+                <listitem>
+                    <listcell label="Дата завершения" />
+                    <listcell>
+                        <hbox>
+                            <label width="100%" value="с" />
+                            <datebox format="dd.MM.yyyy HH:mm:ss" width="70%" value="@bind(taskVM.filter.startDate)" />
+                            <label width="100%" value="по" />
+                            <datebox format="dd.MM.yyyy HH:mm:ss" width="70%" value="@bind(taskVM.filter.endDate)" />
+                        </hbox>
+                    </listcell>
+                </listitem>
+            </listbox>
+            <hbox>
+                <button label="Применить фильтр" onClick="@command('applyFilter')" />
+                <button label="Очистить" onClick="@command('clearFilter')" />
+            </hbox>
+        </vbox>
+        <listbox model="@load(taskVM.taskListModel)" mold="paging" pageSize="10" style="overflow:auto" vflex="true">
+            <listhead>
+                <listheader label="Задача"/>
+                <listheader label="Магазин"/>
+                <listheader label="Заполнено"/>
+                <listheader label="Сумма"/>
+            </listhead>
+            <template name="model" var="task">
+                <listitem>
+                    <attribute name="style" if="${!task.filled}">
+                        background-color: yellow;
+                    </attribute>
+                    <listcell>
+                            <label value="@bind(task.name)" />
+                    </listcell>
+                    <listcell>
+                        <label value="@bind(task.shopName)"/>
+                    </listcell>
+                    <listcell>
+                        <button label="@bind((task.filled) ? 'Редактировать' : 'Заполнить')" onClick="@command(taskVM.getWorksAndMaterials(task))"/>
+                    </listcell>
+                    <listcell>
+                        <label value="@bind(task.amount) @converter('formatedNumber', format='###,###.###')"/>
+                    </listcell>
+                </listitem>
+            </template>
+        </listbox>
+        <menubar>
+            <menuitem label="Отчёт (Excel или Pdf)" href="/ReportXlsx" target="_blank"/>
+            <menuitem label="Загрузить новые задачи" onClick="@command('loadNewTasks')"/>
+            <menu label="Настройки">
+                <menupopup>
+                    <menuitem label="Цены выездов" onClick="@command('redirectToPrices')"></menuitem>
+                    <menuseparator/>
+                    <menuitem label="Exit" onClick="alert(self.label)"/>
+                </menupopup>
+            </menu>
+        </menubar>
+    </window>
+
 </zk>
+

@@ -65,7 +65,7 @@ public class PricesViewModel {
 
     @Command
     public void comeBack() {
-        Executions.sendRedirect("/tasks.zul");
+        Executions.sendRedirect("/index.zul");
     }
 
 }
