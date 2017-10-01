@@ -21,7 +21,6 @@ import ru.simplex_software.smeta.model.Work;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -87,12 +86,15 @@ public class ReportCreator {
         final double estimateWithVAT = vat + estimateWithoutVAT + departures;
         estimateWithoutVAT = totalAmountDepartures;
 
-        final Date dateBegin = new Date();
-        final Date dateEnd = taskFilter.getEndDate();
         final Locale russianLocale = new Locale.Builder().setLanguage("ru").build();
+        final Date dateBegin = new Date();
+        Date dateEnd = taskFilter.getEndDate();
 
         final String monthBegin = DateFormat.getDateInstance(SimpleDateFormat.LONG, russianLocale).format(dateBegin);
-        final String monthEnd = DateFormat.getDateInstance(SimpleDateFormat.LONG, new Locale("ru")).format(dateEnd);
+        if (dateEnd == null) {
+            dateEnd = dateBegin;
+        }
+        final String monthEnd = DateFormat.getDateInstance(SimpleDateFormat.LONG, russianLocale).format(dateEnd);
 
         final String contract = " к Договору подряда №" + numberOfReport + " " + monthBegin;
         final String localCalculation = "Локальный сметный расчет № " + numberNumber + contract;
@@ -486,8 +488,10 @@ public class ReportCreator {
             copyCell(tCell, cell);
             if ( value != null && (checkNumericFormatForElement(i,workBeginI, workEndI) ||
                                    checkNumericFormatForElement(i, materialBeginI, materialEndI))) {
-                BigDecimal val = new BigDecimal(value);
-                cell.setCellValue(decimalFormat.format(val));
+                CellStyle cellStyle = wb.createCellStyle();
+                cellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#.#"));
+                cell.setCellStyle(cellStyle);
+                cell.setCellValue(value);
             } else {
                 cell.setCellValue(value);
             }

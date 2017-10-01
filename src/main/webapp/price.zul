@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
+    <div apply="org.zkoss.bind.BindComposer"
+         viewModel="@id('priceVM') @init('ru.simplex_software.smeta.viewModel.PricesViewModel')">
+        <grid>
+            <rows>
+                <row>
+                    <label value="Дневные выезды" width="150px" />
+                    <hlayout><textbox value="@bind(priceVM.priceDeparture.dayTimePrice)" width="150px" placeholder="Цена" tabindex="1" /></hlayout>
+                </row>
+
+                <row>
+                    <label value="Ночные выезды" width="150px" />
+                    <hlayout>
+                        <textbox value="@bind(priceVM.priceDeparture.urgentTimePrice)" width="150px" placeholder="Цена" tabindex="1" />
+                    </hlayout>
+                </row>
+
+                <row>
+                    <label value="Срочные выезды" width="150px" />
+                    <hlayout><textbox value="@bind(priceVM.priceDeparture.nightlyTimePrice)" width="150px" placeholder="Цена" tabindex="1" /></hlayout>
+                </row>
+
+                <row>
+                    <cell colspan="2" style="text-align:left">
+                        <hlayout>
+                            <button label="Применить" onClick="@command('applyPriceDeparture')"
+                                    width="100px" height="30px" />
+                            <button label="Вернуться назад" onClick="@command('comeBack')"
+                                    width="150px" height="30px" />
+                        </hlayout>
+                    </cell>
+                </row>
+            </rows>
+        </grid>
+    </div>
+
+</zk>
+

@@ -156,6 +156,11 @@ public class TaskViewModel {
         taskFilterDAO.saveOrUpdate(filter);
     }
 
+    @Command
+    public void redirectToPrices() {
+        Executions.sendRedirect("/price.zul");
+    }
+
     private void refreshList() {
         taskListModel.refresh(filter);
     }

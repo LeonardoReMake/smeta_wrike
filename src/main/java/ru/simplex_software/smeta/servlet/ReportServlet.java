@@ -68,9 +68,12 @@ public class ReportServlet implements HttpRequestHandler {
         if (t.getCompletedDate() != null) {
             LocalDateTime toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
             for (Task task : taskFilterList.subList(1, taskFilterList.size())) {
-                if (task.getCompletedDate().isAfter(toDate)) {
-                    t = task; t.setDeparture(true);
-                    toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
+                final LocalDateTime taskCDT = task.getCompletedDate();
+                if (taskCDT != null) {
+                    if (taskCDT.isAfter(toDate)) {
+                        t = task; t.setDeparture(true);
+                        toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
+                    }
                 }
             }
         }
