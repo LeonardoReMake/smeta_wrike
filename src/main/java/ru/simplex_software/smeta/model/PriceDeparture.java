@@ -6,7 +6,7 @@ import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.Entity;
 
-@Entity
+//@Entity нет миграционного срипта
 public class PriceDeparture extends LongIdPersistentEntity {
 
     private static Logger LOG = LoggerFactory.getLogger(PriceDeparture.class);

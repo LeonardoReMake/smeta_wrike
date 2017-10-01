@@ -2,6 +2,9 @@ package ru.simplex_software.smeta.security;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,16 +18,19 @@ import org.springframework.security.oauth2.common.exceptions.InvalidTokenExcepti
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
 import ru.simplex_software.smeta.model.User;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class UserInfoTokenServices implements ResourceServerTokenServices {
-    private final static Log logger = LogFactory.getLog(UserInfoTokenServices.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringSecurityConfig.class);
 
     private final String userInfoEndpointUrl;
     private final String clientId;
@@ -34,6 +40,7 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
     public UserInfoTokenServices(String userInfoEndpointUrl, String clientId) {
         this.userInfoEndpointUrl = userInfoEndpointUrl;
         this.clientId = clientId;
+
     }
 
     public void setTokenType(String tokenType) {
@@ -47,17 +54,14 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
     public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
         Map<String, Object> map = this.getMap(this.userInfoEndpointUrl, accessToken);
         if (map.containsKey("error")) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("userinfo returned error: " + map.get("error"));
-            }
-
+            LOG.debug("userinfo returned error: {}" , map.get("error"));
             throw new InvalidTokenException(accessToken);
         } else {
             return this.extractAuthentication(map);
         }
     }
 
-    private OAuth2Authentication extractAuthentication(Map<String, Object> map) {
+    private OAuth2Authentication extractAuthentication(Map<String, Object> map) throws AuthenticationException{
         Object principal = this.getPrincipal(map);
 
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -72,14 +76,17 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
         return oAuth2Authentication;
     }
 
-    private Object getPrincipal(Map<String, Object> map) {
+    private Object getPrincipal(Map<String, Object> map) throws AuthenticationException{
         ArrayList contacts = (ArrayList) map.get("data");
         Map data = (Map)contacts.get(0);
-        String accountId = (String)((Map)((List)data.get("profiles")).get(0)).get("accountId");
+        List profiles = (List) data.get("profiles");
+        if(! profiles.stream().anyMatch(o-> WrikeTaskDaoImpl.WRIKE_ACCOUNT.equals(((Map)o).get("accountId")))){
+             throw new AuthenticationCredentialsNotFoundException("no access to account "+WrikeTaskDaoImpl.WRIKE_ACCOUNT);
+        }
         User user = new User();
         user.setFirstName((String) data.get("firstName"));
         user.setLastName((String) data.get("lastName"));
-        user.setId(accountId);
+        user.setId(WrikeTaskDaoImpl.WRIKE_ACCOUNT);
         return user;
     }
 
@@ -88,10 +95,8 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
     }
 
     private Map<String, Object> getMap(String path, String accessToken) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Getting user info from: " + path);
-        }
 
+        LOG.debug("Getting user info from: {}", path);
         try {
             OAuth2RestOperations restTemplate = this.restTemplate;
             if (restTemplate == null) {
@@ -117,7 +122,7 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
             }
             return resultMap;
         } catch (Exception var6) {
-            logger.warn("Could not fetch user details: " + var6.getClass() + ", " + var6.getMessage());
+            LOG.warn("Could not fetch user details: " + var6.getClass() + ", " + var6.getMessage());
             return Collections.singletonMap("error", "Could not fetch user details");
         }
     }

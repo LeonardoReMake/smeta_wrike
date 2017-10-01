@@ -157,6 +157,15 @@ public class TaskViewModel {
     }
 
     @Command
+    public void selectCity(@BindingParam("checked") boolean isPicked, @BindingParam("selectedCity")City city){
+        if (isPicked){
+            getFilter().getCities().add(city);
+        }else{
+            getFilter().getCities().remove(city);
+        }
+    }
+
+    @Command
     public void redirectToPrices() {
         Executions.sendRedirect("/price.zul");
     }
