@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -32,6 +33,7 @@ public class Task extends LongIdPersistentEntity {
     private String name;
 
     /** Название магазина, с которым связана задача. **/
+    @Column(length = 1024)
     private String shopName;
 
     /** Сумма по заданию. **/

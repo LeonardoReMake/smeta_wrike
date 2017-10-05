@@ -29,7 +29,7 @@
                         <!--</chosenbox>-->
 
                         <!--https://www.zkoss.org/wiki/ZK_Developer%27s_Reference/MVVM/Data_Binding/Collection_and_Selection#Custom_Multiple_Selections-->
-                        <hlayout id="vlayout" children="@load(taskVM.cities)">
+                        <hlayout id="vlayout" children="@load(taskVM.cities)" style="overflow:auto">
                             <template name="children">
                                 <checkbox label="@load(each.name)" checked="@load(taskVM.getFilter().getCities().contains(each))"
                                           onCheck="@command('selectCity', checked=self.checked, selectedCity=each)">
@@ -85,13 +85,13 @@
         <menubar>
             <menuitem label="Отчёт (Excel или Pdf)" href="/ReportXlsx" target="_blank"/>
             <menuitem label="Загрузить новые задачи" onClick="@command('loadNewTasks')"/>
-            <menu label="Настройки">
-                <menupopup>
-                    <menuitem label="Цены выездов" onClick="@command('redirectToPrices')"></menuitem>
-                    <menuseparator/>
-                    <menuitem label="Exit" onClick="alert(self.label)"/>
-                </menupopup>
-            </menu>
+            <!--<menu label="Настройки">-->
+                <!--<menupopup>-->
+                    <!--<menuitem label="Цены выездов" onClick="@command('redirectToPrices')"></menuitem>-->
+                    <!--<menuseparator/>-->
+                    <!--<menuitem label="Exit" onClick="alert(self.label)"/>-->
+                <!--</menupopup>-->
+            <!--</menu>-->
         </menubar>
     </window>
 

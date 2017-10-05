@@ -45,7 +45,7 @@ public class WrikeLoaderService {
         if (taskInDb.size() != 0) {
             LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
             LOG.info("Last updated task date: "+lastCreationDate);
-            newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.plusSeconds(1));
+            newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.minusMonths(2));
         } else {
             newTasks = wrikeTaskDAO.findTasks();
         }
@@ -55,7 +55,10 @@ public class WrikeLoaderService {
             for (Task task : newTasks) {
                 parseTaskTitle(task);
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
-                taskDAO.saveOrUpdate(task);
+                if(taskDAO.findByWrikeId(task.getWrikeId())==null){
+                    taskDAO.saveOrUpdate(task);
+                }
+
             }
         } else {
             LOG.info("No new tasks");
