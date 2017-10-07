@@ -30,6 +30,7 @@ public class Task extends LongIdPersistentEntity {
 
     /** Полное название задачи, указанное в wrike. **/
     @NotNull
+    @Column(length = 1024)
     private String name;
 
     /** Название магазина, с которым связана задача. **/
@@ -59,12 +60,15 @@ public class Task extends LongIdPersistentEntity {
     private City city;
 
     /** Номер заявки. Например: INC1343892. **/
+    @Column(length = 1024)
     private String orderNumber;
 
     /** Ссылка на задачу в wrike. **/
+    @Column(length = 1024)
     private String wrikeLink;
 
     /** Путь к задаче в wrike. **/
+    @Column(length = 1024)
     private String path;
 
     /** Id папок в wrike. **/

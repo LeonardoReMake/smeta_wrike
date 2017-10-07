@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConstantsOfReport {
+
     private static Logger LOG = LoggerFactory.getLogger(ConstantsOfReport.class);
 
     private ConstantsOfReport() {}
@@ -34,11 +35,9 @@ public class ConstantsOfReport {
 
     public static final int ROW_FOR_AMOUNT_NOT_VAT = 6;
 
-    public static final int AMOUNT_DEPARTURES = 7;
+    public static final int ROW_FOR_VAT = 7;
 
-    public static final int ROW_FOR_VAT = 8;
-
-    public static final int ROW_FOR_VAT_AMOUNT = 9;
+    public static final int ROW_FOR_VAT_AMOUNT = 8;
 
     public static final int ROW_FOR_ESTIMATE_PERIOD = 4;
 

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.HttpRequestHandler;
+import ru.simplex_software.smeta.dao.PriceDepartureDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.TaskFilterDAO;
 import ru.simplex_software.smeta.dao.TaskFilterImplDAO;
@@ -36,6 +37,9 @@ public class ReportServlet implements HttpRequestHandler {
     @Autowired
     private TaskFilterDAO taskFilterDAO;
 
+    @Autowired
+    private PriceDepartureDAO priceDepartureDAO;
+
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final ReportCreator reportCreator = new ReportCreator();
@@ -50,7 +54,7 @@ public class ReportServlet implements HttpRequestHandler {
             final List<Task> taskFilterList = taskFilterImplDAO.findTasksByFilter(filter);
 
             setDeparture(taskFilterList);
-            reportCreator.copyFromTemplateTask(taskFilterList);
+            reportCreator.copyFromTemplateTask(taskFilterList, priceDepartureDAO.findAllDepartures());
             reportCreator.copyFromTemplateHeader(taskFilterList, filter);
             reportCreator.copyFromTemplateFooter(taskFilterList);
             reportCreator.write(outputStream);

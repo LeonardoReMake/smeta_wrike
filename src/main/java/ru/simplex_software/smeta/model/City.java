@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
@@ -12,6 +13,7 @@ public class City extends LongIdPersistentEntity {
     private static Logger LOG = LoggerFactory.getLogger(City.class);
 
     /* Название города. */
+    @Column(length = 1024)
     private String name;
 
     /** Документ, к которому относится город. **/

@@ -85,13 +85,7 @@
         <menubar>
             <menuitem label="Отчёт (Excel или Pdf)" href="/ReportXlsx" target="_blank"/>
             <menuitem label="Загрузить новые задачи" onClick="@command('loadNewTasks')"/>
-            <!--<menu label="Настройки">-->
-                <!--<menupopup>-->
-                    <!--<menuitem label="Цены выездов" onClick="@command('redirectToPrices')"></menuitem>-->
-                    <!--<menuseparator/>-->
-                    <!--<menuitem label="Exit" onClick="alert(self.label)"/>-->
-                <!--</menupopup>-->
-            <!--</menu>-->
+            <menuitem label="Настройки" onClick="@command('redirectToPrices')"/>
         </menubar>
     </window>
 

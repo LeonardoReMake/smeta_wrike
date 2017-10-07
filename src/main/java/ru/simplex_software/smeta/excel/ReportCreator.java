@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.simplex_software.smeta.model.Element;
 import ru.simplex_software.smeta.model.Material;
+import ru.simplex_software.smeta.model.PriceDeparture;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
@@ -25,6 +26,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -101,8 +103,8 @@ public class ReportCreator {
         final String estimatePeriod = "Отчетный период с " + monthBegin +  " по " + monthEnd;
 
         copyStylesOfElement(getTemplateHeader(), ConstantsOfReport.INDEX_SHEET,
-                ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
-                ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
+                            ConstantsOfReport.COUNT_ROWS_HEADER, ConstantsOfReport.INDEX_SHEET,
+                            ConstantsOfReport.COUNT_CELLS_ESTIMATE, ConstantsOfReport.INDEX_SHEET, true);
 
         final Cell cellContract = addCellType(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
                 ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE,
@@ -145,15 +147,6 @@ public class ReportCreator {
         cellEstimateAmount.setCellValue(decimalFormat.format(getAmountsOfEstimate(workAmountList, materialAmountList))
                                         + ConstantsOfReport.RU_STRING);
 
-        final Cell cellDeparture = addCellType(ConstantsOfReport.AMOUNT_DEPARTURES,
-                                               ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                                               CellType.NUMERIC);
-        sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.AMOUNT_DEPARTURES,
-                                                    ConstantsOfReport.AMOUNT_DEPARTURES,
-                                                    ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
-                                                    ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellDeparture.setCellValue(decimalFormat.format(estimateWithoutVAT) + ConstantsOfReport.RU_STRING);
-
         final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT,
@@ -181,12 +174,12 @@ public class ReportCreator {
     }
 
     /* Создание списков заданий. */
-    public void copyFromTemplateTask(List<Task> tasks)  throws InvalidFormatException {
+    public void copyFromTemplateTask(List<Task> tasks, List<PriceDeparture> priceDepartures) throws InvalidFormatException, ParseException {
         template = getTemplateTasks();
         final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         int workRowPosition;
         int materialRowPosition;
-        freeRowPosition = 12;
+        freeRowPosition = 11;
 
         for (Task task : tasks) {
             double worksAmount = getAmount(task.getWorks());
@@ -223,8 +216,41 @@ public class ReportCreator {
                     materialRowPosition++;
                 }
             }
+
+            double dayPriceDep = 600;
+            double nightPriceDep = 1200;
+            double urgentPriceDep = 1800;
+
+            PriceDeparture priceDeparture = new PriceDeparture();
+            priceDeparture.setDayTimePrice(dayPriceDep);
+            priceDeparture.setNightlyTimePrice(nightPriceDep);
+            priceDeparture.setUrgentTimePrice(urgentPriceDep);
+
+            if (!priceDepartures.isEmpty()) {
+                priceDeparture = priceDepartures.get(0);
+                dayPriceDep = priceDeparture.getDayTimePrice();
+                nightPriceDep = priceDeparture.getNightlyTimePrice();
+                urgentPriceDep = priceDeparture.getUrgentTimePrice();
+            }
+
+            final LocalDateTime completedDate = task.getCompletedDate();
+
+            double morning = 6.0;
+            double evening = 20.0;
+
+            if (completedDate != null) {
+                if (completedDate.getHour() <= morning || completedDate.getHour() >= evening) {
+                    amountDepartures = nightPriceDep * departures;
+                } else {
+                    amountDepartures = dayPriceDep * departures;
+                }
+            }
+
+            totalAmountDepartures += amountDepartures;
+
             freeRowPosition = createAmountForWorks(workRowPosition, tSheet, worksAmount);
-            createAmountForMaterials(materialRowPosition, tSheet, materialsAmount, tasks);
+            createAmountForMaterials(materialRowPosition, tSheet, materialsAmount, tasks, priceDeparture);
+
         }
 
     }
@@ -335,15 +361,14 @@ public class ReportCreator {
         return workRowPosition;
     }
 
-    private void setOneDeparture(List<Task> taskList) {
+    private void setOneDeparture(List<Task> taskList, PriceDeparture priceDeparture) throws ParseException {
         departures = 0;
+
         for (Task newTask : taskList) {
             if (newTask.isDeparture()) {
                 departures = 1;
             }
         }
-        amountDepartures = departures * ONE_DEPARTURE;
-        totalAmountDepartures += amountDepartures;
     }
 
     /**
@@ -354,12 +379,12 @@ public class ReportCreator {
      * @param taskList
      */
     private void createAmountForMaterials(int materialRowPosition, Sheet tSheet,
-                                          double materialsAmount, List<Task> taskList) {
+                                          double materialsAmount, List<Task> taskList, PriceDeparture priceDeparture) throws ParseException {
         final int cellStart = 6;
         final int cellEnd = 11;
         final int numericCell = 10;
 
-        setOneDeparture(taskList);
+        setOneDeparture(taskList, priceDeparture);
 
         final String stateDepartures = " ( " + departures + "/0)";
         final String stateAmountDepartures = " (" + amountDepartures + ",00/0,00)";
@@ -444,20 +469,26 @@ public class ReportCreator {
                                      boolean isHeader) {
         final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         int rowI;
-        for (rowI = startRow; rowI < endRow; rowI++) {
+        for (rowI = startRow; rowI < endRow - 1; rowI++) {
+            final int numNonCopy = 8;
             Row row = sheet.createRow(rowI);
             Row tRow = tSheet.getRow(rowI - rowShift);
-            if (rowI == ConstantsOfReport.COUNT_ROWS_HEADER - 1 && isHeader)
-                copyRowStyle(tRow, row);
-            for (int cellI = startCell; cellI < endCell; cellI++) {
-                sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
-                Cell tCell;
-                if (tRow != null) {
-                    tCell = tRow.getCell(cellI);
-                    Cell cell = row.createCell(cellI);
-                    copyCell(tCell, cell);
+            if (tRow != null) {
+                if (tRow.getRowNum() >= numNonCopy) {
+                    tRow = tSheet.getRow(rowI - rowShift + 1);
                 }
             }
+            if (rowI == ConstantsOfReport.COUNT_ROWS_HEADER - 1 && isHeader)
+                copyRowStyle(tRow, row);
+                for (int cellI = startCell; cellI < endCell; cellI++) {
+                    sheet.setColumnWidth(cellI, tSheet.getColumnWidth(cellI));
+                    Cell tCell;
+                    if (tRow != null) {
+                        tCell = tRow.getCell(cellI);
+                        Cell cell = row.createCell(cellI);
+                        copyCell(tCell, cell);
+                    }
+                }
         }
     }
 

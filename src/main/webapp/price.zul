@@ -8,19 +8,19 @@
             <rows>
                 <row>
                     <label value="Дневные выезды" width="150px" />
-                    <hlayout><textbox value="@bind(priceVM.priceDeparture.dayTimePrice)" width="150px" placeholder="Цена" tabindex="1" /></hlayout>
+                    <hlayout><textbox inplace="true" value="@bind(priceVM.priceDeparture.dayTimePrice)" width="150px" tabindex="1" /></hlayout>
                 </row>
 
                 <row>
                     <label value="Ночные выезды" width="150px" />
                     <hlayout>
-                        <textbox value="@bind(priceVM.priceDeparture.urgentTimePrice)" width="150px" placeholder="Цена" tabindex="1" />
+                        <textbox inplace="true" value="@bind(priceVM.priceDeparture.urgentTimePrice)" width="150px" tabindex="1" />
                     </hlayout>
                 </row>
 
                 <row>
                     <label value="Срочные выезды" width="150px" />
-                    <hlayout><textbox value="@bind(priceVM.priceDeparture.nightlyTimePrice)" width="150px" placeholder="Цена" tabindex="1" /></hlayout>
+                    <hlayout><textbox inplace="true" value="@bind(priceVM.priceDeparture.nightlyTimePrice)" width="150px" tabindex="1" /></hlayout>
                 </row>
 
                 <row>
@@ -36,6 +36,9 @@
             </rows>
         </grid>
     </div>
-
 </zk>
 
+
+<!--<window	width="100%" height="100%" title="Цены выездов"-->
+           <!--viewModel="@id('priceVM') @init('ru.simplex_software.smeta.viewModel.PricesViewModel')"-->
+           <!--form="@id('price') @load(priceVM.priceDeparture) @save(priceVM.priceDeparture, before='submit')">-->
