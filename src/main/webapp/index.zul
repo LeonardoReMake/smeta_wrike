@@ -68,8 +68,9 @@
                     <attribute name="style" if="${!task.filled}">
                         background-color: yellow;
                     </attribute>
-                    <listcell onClick="@command(taskVM.linkToWrike(task))">
-                            <label value="@bind(task.name)"/>
+                    <listcell>
+                        <checkbox checked="@bind(task.checked)" onCheck="@command(taskVM.isChecked(task))"/>
+                        <a onClick="@command(taskVM.linkToWrike(task))" label="@bind(task.name)" target="_blank"/>
                     </listcell>
                     <listcell>
                         <label value="@bind(task.shopName)"/>

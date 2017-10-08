@@ -27,6 +27,7 @@ import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
 
 import javax.persistence.Transient;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -145,6 +146,19 @@ public class TaskViewModel {
         });
     }
 
+    private void addAmountForTask(Task task) {
+        double amountTask = 0;
+        for (Work work : task.getWorks()) {
+            amountTask += work.getAmount();
+        }
+
+        for (Material material : task.getMaterials()) {
+            amountTask += material.getAmount();
+        }
+
+        task.setAmount(amountTask);
+    }
+
     @Command
     @NotifyChange({"taskListModel"})
     public void applyFilter() {
@@ -162,9 +176,11 @@ public class TaskViewModel {
     }
 
     private Date addTimeByDate(Date date, int hour, int minute) {
-        calendar.setTime(date);
-        calendar.set(Calendar.HOUR_OF_DAY, hour);
-        calendar.set(Calendar.MINUTE, minute);
+        if (date != null) {
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+        }
         return calendar.getTime();
     }
 
@@ -179,8 +195,8 @@ public class TaskViewModel {
     }
 
     @Command
-    public void linkToWrike(Task task){
-        Executions.sendRedirect(task.getWrikeLink());
+    public void linkToWrike(Task task) throws IOException {
+        Executions.getCurrent().sendRedirect(task.getWrikeLink(), "_blank");
     }
 
     @Command
@@ -201,17 +217,9 @@ public class TaskViewModel {
         taskListModel.refresh(filter);
     }
 
-    private void addAmountForTask(Task task) {
-        double amountTask = 0;
-        for (Work work : task.getWorks()) {
-            amountTask += work.getAmount();
-        }
-
-        for (Material material : task.getMaterials()) {
-            amountTask += material.getAmount();
-        }
-
-        task.setAmount(amountTask);
+    @Command
+    public void isChecked(@BindingParam("task") Task task) {
+        taskDAO.saveOrUpdate(task);
     }
 
 }

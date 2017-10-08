@@ -43,6 +43,9 @@ public class Task extends LongIdPersistentEntity {
     /** Указывает заполнена ли задача работами. **/
     private boolean filled = false;
 
+    /** Указывает выбрана ли задача. **/
+    private boolean checked = true;
+
     /** Работы, которые надо выполнить по этой задаче. **/
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "task")
     private List<Work> works = new ArrayList<>();
@@ -216,4 +219,11 @@ public class Task extends LongIdPersistentEntity {
         this.departure = departure;
     }
 
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
 }

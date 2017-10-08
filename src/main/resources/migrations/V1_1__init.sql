@@ -22,6 +22,7 @@ CREATE TABLE task (
     city character varying(255),
     createddate timestamp without time zone,
     filled boolean NOT NULL,
+    checked boolean NOT NULL,
     name character varying(255),
     ordernumber character varying(255),
     path character varying(255),
