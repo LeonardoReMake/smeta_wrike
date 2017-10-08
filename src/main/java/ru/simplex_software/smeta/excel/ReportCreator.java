@@ -1,14 +1,17 @@
 package ru.simplex_software.smeta.excel;
 
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFHyperlink;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,9 +238,8 @@ public class ReportCreator {
 
             final LocalDateTime completedDate = task.getCompletedDate();
 
-            double morning = 6.0;
-            double evening = 20.0;
-
+            int morning = 6;
+            int evening = 20;
             if (completedDate != null) {
                 if (completedDate.getHour() <= morning || completedDate.getHour() >= evening) {
                     amountDepartures = nightPriceDep * departures;
@@ -250,7 +252,6 @@ public class ReportCreator {
 
             freeRowPosition = createAmountForWorks(workRowPosition, tSheet, worksAmount);
             createAmountForMaterials(materialRowPosition, tSheet, materialsAmount, tasks, priceDeparture);
-
         }
 
     }
@@ -406,8 +407,14 @@ public class ReportCreator {
     private void createOneTaskFromTemplate(Row row, Row tRow, Task task) {
         Cell cellTask = row.createCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
         Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
-        copyCell(tCell, cellTask);
         cellTask.setCellValue(task.getName());
+
+        CreationHelper createHelper = wb.getCreationHelper();
+        XSSFHyperlink linkWrike = (XSSFHyperlink) createHelper.createHyperlink(HyperlinkType.URL);
+        linkWrike.setAddress(task.getWrikeLink());
+        cellTask.setHyperlink(linkWrike);
+
+        copyCell(tCell, cellTask);
     }
 
     private int createWorks(Task task, int workRowPosition) {

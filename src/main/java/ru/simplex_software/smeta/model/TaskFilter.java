@@ -28,6 +28,8 @@ public class TaskFilter extends LongIdPersistentEntity{
 
     private Date endDate;
 
+    public TaskFilter() { }
+
     public City getCity() {
         return city;
     }

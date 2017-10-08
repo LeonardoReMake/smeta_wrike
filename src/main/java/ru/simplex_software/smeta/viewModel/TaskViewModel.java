@@ -26,7 +26,10 @@ import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
 
+import javax.persistence.Transient;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +63,9 @@ public class TaskViewModel {
 
     @WireVariable
     private TaskFilterDAO taskFilterDAO;
+
+    @Transient
+    private final Calendar calendar = Calendar.getInstance();
 
     // текущий фильтр
     private TaskFilter filter;
@@ -142,8 +148,24 @@ public class TaskViewModel {
     @Command
     @NotifyChange({"taskListModel"})
     public void applyFilter() {
+        int beginHour = 0;
+        int beginMinute = 0;
+
+        int endHour = 23;
+        int endMinute = 59;
+
+        filter.setStartDate(addTimeByDate(filter.getStartDate(), beginHour, beginMinute));
+        filter.setEndDate(addTimeByDate(filter.getEndDate(), endHour, endMinute));
+
         taskFilterDAO.saveOrUpdate(filter);
         refreshList();
+    }
+
+    private Date addTimeByDate(Date date, int hour, int minute) {
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, minute);
+        return calendar.getTime();
     }
 
     @Command
@@ -154,6 +176,11 @@ public class TaskViewModel {
         filter.setEndDate(null);
         filter.setCities(new HashSet<>());
         taskFilterDAO.saveOrUpdate(filter);
+    }
+
+    @Command
+    public void linkToWrike(Task task){
+        Executions.sendRedirect(task.getWrikeLink());
     }
 
     @Command
