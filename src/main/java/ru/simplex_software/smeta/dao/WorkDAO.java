@@ -19,9 +19,6 @@ public interface WorkDAO extends Dao<Work, Long>{
     @Finder(query = "from Work where template = :template order by id")
     List<Work> findByTemplate(@Named("template") Template template);
 
-    @Finder(query = "from Work where task.shopName = :shopName order by id")
-    List<Work> findWorkByShopName(@Named("shopName") String shopName);
-
     @Finder(query = "select new Work(work.name, work.units, sum(work.quantity), " +
             "work.unitPrice, sum(work.amount)) from Work work " +
             "where work.task.shopName = :shopName and " +
