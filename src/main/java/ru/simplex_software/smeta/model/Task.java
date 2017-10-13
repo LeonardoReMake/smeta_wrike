@@ -226,4 +226,5 @@ public class Task extends LongIdPersistentEntity {
     public void setChecked(boolean checked) {
         this.checked = checked;
     }
+
 }

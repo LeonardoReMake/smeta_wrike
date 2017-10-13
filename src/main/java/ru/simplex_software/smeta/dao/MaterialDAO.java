@@ -20,4 +20,11 @@ public interface MaterialDAO extends Dao<Material, Long> {
     @Finder(query = "from Material where template = :template order by id")
     List<Material> findByTemplate(@Named("template") Template template);
 
+    @Finder(query = "select new Material(material.name, material.units, sum(material.quantity), " +
+                    "material.unitPrice, sum(material.amount)) from Material material " +
+                    "where material.task.shopName = :shopName and " +
+                    "material.task.city.id = :cityId " +
+                    "group by material.name, material.units, material.unitPrice")
+    List<Material> findMaterialByShopName(@Named("shopName") String shopName, @Named("cityId") Long cityId);
+
 }

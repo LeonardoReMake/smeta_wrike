@@ -36,4 +36,30 @@ public interface TaskFilterImplDAO extends Dao<Task, Long> {
             "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) " +
             "order by task.createdDate desc")
     List<Task> findTasksByFilter(@Named("filter") TaskFilter taskFilter);
+
+    @Finder(query = "select task.shopName, task.city.id " +
+            "from Task task, " +
+            " TaskFilter filter " +
+            " left join filter.cities as filterCity " +
+            "where filter = :filter and " +
+            "task.city = COALESCE(filterCity, task.city) and " +
+            "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
+            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) " +
+            "group by task.shopName, task.city.id")
+    List<Object[]> findShopNameAndCity(@Named("filter") TaskFilter taskFilter);
+
+    @Finder(query = "select task " +
+            "from Task task, " +
+            "TaskFilter filter " +
+            "left join filter.cities as filterCity " +
+            "where filter = :filter and " +
+            "task.city = COALESCE(filterCity, task.city) and " +
+            "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
+            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) and " +
+            " task.shopName = :shopName and task.city.id = :cityId ")
+    List<String> findOrderNumberByShopName(@Named("filter") TaskFilter taskFilter,
+                                           @Named("shopName") String shopName,
+                                           @Named("cityId") Long id);
+
 }
+

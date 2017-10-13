@@ -15,9 +15,8 @@ public class Material extends Element {
     @ManyToOne
     private Template template;
 
-    public Material(String name, String units, Double quantity, Double unitPrice, Double amount, Template template) {
+    public Material(String name, String units, Double quantity, Double unitPrice, Double amount) {
         super(name, units, quantity, unitPrice, amount);
-        this.template = template;
     }
 
     public Material() {}

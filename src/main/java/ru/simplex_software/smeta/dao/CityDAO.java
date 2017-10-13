@@ -19,4 +19,7 @@ public interface CityDAO extends Dao<City, Long> {
 
     @Finder(query = "from City")
     List<City> findAll();
+
+    @Finder(query = "select city from City city where city.id = :id")
+    City findCityByID(@Named("id") Long id);
 }
