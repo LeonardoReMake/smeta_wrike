@@ -25,6 +25,7 @@ import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
+import ru.simplex_software.smeta.util.ImportInfo;
 
 import javax.persistence.Transient;
 import java.io.IOException;
@@ -122,10 +123,13 @@ public class TaskViewModel {
     }
 
     @Command
-    @NotifyChange("taskListModel")
+    @NotifyChange({"taskListModel", "importInfo"})
     public void loadNewTasks() {
-        wrikeLoaderService.loadNewTasks();
+        ImportInfo importInfo = wrikeLoaderService.loadNewTasks();
         refreshList();
+        Map<String, ImportInfo> args = new HashMap<>();
+        args.put("info", importInfo);
+        Executions.createComponents("/log_dialog.zul", null, args);
     }
 
     @Command

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zul"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
+    <window id="vmDialog" title="Информация об импорте" mode="modal" closable="true" width="60%"
+            viewModel="@id('vm') @init('ru.simplex_software.smeta.viewModel.LogDialogViewModel')" >
+        <vbox>
+            <listbox>
+                <listhead />
+                <listitem>
+                    <listcell label="Всего импортировано задач: "/>
+                    <!--<listcell label="20"/>-->
+                    <listcell label="@load(vm.importInfo.importedTaskCount)"/>
+                </listitem>
+                <listitem>
+                    <listcell label="Кол-во ошибок: "/>
+                    <!--<listcell label="1"/>-->
+                    <listcell label="@load(vm.importInfo.notParsedTaskCount)"/>
+                </listitem>
+            </listbox>
+            <grid model="@load(vm.importInfo.notParsedTaskList)" height="300px">
+                <columns>
+                    <column label="Название задачи" hflex="1"/>
+                    <column label="Папка в wrike" hflex="1"/>
+                    <column label="Сообщение об ошибке" hflex="3"/>
+                </columns>
+                <template name="model" var="notParsedTask">
+                    <row>
+                        <label value="@load(notParsedTask.task.name)" />
+                        <label value="@load(notParsedTask.task.path)" />
+                        <textbox value="@load(notParsedTask.message)" height="90px" width="100%" />
+                    </row>
+                </template>
+            </grid>
+        </vbox>
+    </window>
+</zk>

@@ -4,16 +4,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.simplex_software.smeta.dao.CityDAO;
-import ru.simplex_software.smeta.dao.MaterialDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
-import ru.simplex_software.smeta.dao.WorkDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
 import ru.simplex_software.smeta.model.City;
 import ru.simplex_software.smeta.model.Task;
+import ru.simplex_software.smeta.util.ImportInfo;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import static java.util.Collections.binarySearch;
 
 @Service
 public class WrikeLoaderService {
@@ -26,21 +29,13 @@ public class WrikeLoaderService {
     private TaskDAO taskDAO;
 
     @Resource
-    private WorkDAO workDAO;
-
-    @Resource
-    private MaterialDAO materialDAO;
-
-    @Resource
     private CityDAO cityDAO;
 
-    @Resource
-    private WrikeLoaderService wrikeLoaderService;
-
-    public void loadNewTasks() {
+    public ImportInfo loadNewTasks() {
+        ImportInfo importInfo = new ImportInfo();
         List<Task> taskInDb = taskDAO.findAllTasks();
-
         List<Task> newTasks;
+
 
         if (taskInDb.size() != 0) {
             LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
@@ -52,27 +47,42 @@ public class WrikeLoaderService {
 
         if (newTasks.size() != 0) {
             LOG.info("find "+newTasks.size()+" new tasks");
+            importInfo.setImportedTaskCount(newTasks.size());
             for (Task task : newTasks) {
-                parseTaskTitle(task);
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
-                if(taskDAO.findByWrikeId(task.getWrikeId())==null){
+                String log = parseTaskTitle(task);
+                if (log.length() > 0) {
+                    importInfo.addNotParsedTask(task, log);
+                }
+                if(taskDAO.findByWrikeId(task.getWrikeId()) == null){
                     taskDAO.saveOrUpdate(task);
                 }
-
             }
         } else {
             LOG.info("No new tasks");
         }
+        return importInfo;
     }
 
-    private void parseTaskTitle(Task task) {
+    private Comparator<Task> compareByCreatedDate = Comparator.comparing(Task::getCreatedDate);
+
+    private void updateTasks(List<Task> taskInDb, List<Task> newTasks) {
+        for (Task task : newTasks) {
+            int index = Collections.binarySearch(taskInDb, task, compareByCreatedDate);
+            Task taskToUpdate = taskInDb.get(index);
+
+        }
+    }
+
+    private String parseTaskTitle(Task task) {
+        StringBuilder log = new StringBuilder();
         String rawTitle = task.getName();
 
         String[] parts = rawTitle.split(" ");
 
         if (parts.length < 4) {
             LOG.warn("could not parse string: "+rawTitle);
-            return;
+            return "Невозможно выделить данные из названия задачи.";
         }
 
         int index = 0;
@@ -81,12 +91,14 @@ public class WrikeLoaderService {
         if (parts[index].contains(":")) {
             number = parts[index].substring(0, parts[index].length()-1);
             index++;
+        } else {
+//            log.append("Невозможно выделить номер задачи. Отсутсвует ':' .\n");
         }
 
         String city = parts[index];
         if (city.equals("Заявка")) {
             LOG.warn("could not parse string: "+rawTitle);
-            return;
+            return "Невозможно выделить данные из названия задачи.";
         }
         index++;
 
@@ -107,18 +119,23 @@ public class WrikeLoaderService {
         String id = "";
         if (i < parts.length && parts[i].startsWith("INC")) {
             id = parts[i];
+        } else {
+//            log.append("Невозможно выделить id заявки. Отсутствует 'INC'.\n");
         }
 
         List<City> cities = cityDAO.findCityForName(city);
         City taskCity;
         if (cities == null || cities.isEmpty()) {
+            log.append("Город ").append(city).append(" не найден в имеющемся списке городов. \n");
             List<City> citiesForPath = cityDAO.findCityForName(task.getPath());
             if (!citiesForPath.isEmpty()) {
+                log.append("Город задачи определен по папке wrike: ").append(citiesForPath.get(0).getName()).append(". ");
                 taskCity = citiesForPath.get(0);
             } else {
                 taskCity = new City();
-                taskCity.setName(city);
+                taskCity.setName(task.getPath());
                 cityDAO.create(taskCity);
+                log.append("Город ").append(task.getPath()).append(" добавлен в базу данных. \n");
             }
         } else {
             taskCity = cities.get(0);
@@ -127,6 +144,7 @@ public class WrikeLoaderService {
         task.setShopName(shop.toString());
         task.setCity(taskCity);
         task.setOrderNumber(id);
+        return log.toString();
     }
 
     private boolean isShop(String str) {
