@@ -3,6 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.zkoss.org/2005/zul  http://www.zkoss.org/2005/zul/zul.xsd">
     <window id="vmDialog" title="Информация об импорте" mode="modal" closable="true" width="60%"
+            sizable="true"
             viewModel="@id('vm') @init('ru.simplex_software.smeta.viewModel.LogDialogViewModel')" >
         <vbox>
             <listbox>
@@ -26,7 +27,7 @@
                 </columns>
                 <template name="model" var="notParsedTask">
                     <row>
-                        <label value="@load(notParsedTask.task.name)" />
+                        <a href="@load(notParsedTask.task.wrikeLink)" label="@load(notParsedTask.task.name)" target="_blank"/>
                         <label value="@load(notParsedTask.task.path)" />
                         <textbox value="@load(notParsedTask.message)" height="90px" width="100%" />
                     </row>

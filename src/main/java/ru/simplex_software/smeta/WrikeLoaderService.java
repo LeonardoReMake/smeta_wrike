@@ -34,44 +34,39 @@ public class WrikeLoaderService {
     public ImportInfo loadNewTasks() {
         ImportInfo importInfo = new ImportInfo();
         List<Task> taskInDb = taskDAO.findAllTasks();
-        List<Task> newTasks;
 
-
-        if (taskInDb.size() != 0) {
-            LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
-            LOG.info("Last updated task date: "+lastCreationDate);
-            newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.minusMonths(2));
-        } else {
-            newTasks = wrikeTaskDAO.findTasks();
-        }
+        LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
+        LOG.info("Last updated task date: "+lastCreationDate);
+        List<Task> newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.minusMonths(2));
 
         if (newTasks.size() != 0) {
-            LOG.info("find "+newTasks.size()+" new tasks");
+            LOG.info("find "+newTasks.size()+" in last 2 months");
             importInfo.setImportedTaskCount(newTasks.size());
+            int createdTasksCount = 0;
+            int updatedTaskCount = 0;
             for (Task task : newTasks) {
                 task.setPath(wrikeTaskDAO.findPathForTask(task));
                 String log = parseTaskTitle(task);
                 if (log.length() > 0) {
                     importInfo.addNotParsedTask(task, log);
                 }
-                if(taskDAO.findByWrikeId(task.getWrikeId()) == null){
-                    taskDAO.saveOrUpdate(task);
+
+                Task taskToUpdate = taskDAO.findByWrikeId(task.getWrikeId());
+                if (taskToUpdate == null) {
+                    taskDAO.create(task);
+                    createdTasksCount++;
+                } else {
+                    task.setId(taskToUpdate.getId());
+                    taskDAO.merge(task);
+                    updatedTaskCount++;
                 }
             }
+            LOG.info("Count of created tasks: "+createdTasksCount);
+            LOG.info("Count of updated tasks: "+updatedTaskCount);
         } else {
             LOG.info("No new tasks");
         }
         return importInfo;
-    }
-
-    private Comparator<Task> compareByCreatedDate = Comparator.comparing(Task::getCreatedDate);
-
-    private void updateTasks(List<Task> taskInDb, List<Task> newTasks) {
-        for (Task task : newTasks) {
-            int index = Collections.binarySearch(taskInDb, task, compareByCreatedDate);
-            Task taskToUpdate = taskInDb.get(index);
-
-        }
     }
 
     private String parseTaskTitle(Task task) {
