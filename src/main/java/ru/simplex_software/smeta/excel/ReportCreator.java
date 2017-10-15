@@ -98,13 +98,6 @@ public class ReportCreator {
         int numberNumber = 0;
         int numberOfReport = 0;
 
-        final double simpleVAT = 0.18;
-        final double departures = getTotalAmount(reportElements);
-        final double vat = (estimateWithoutVAT + departures) * simpleVAT;
-
-        final double estimateWithVAT = vat + estimateWithoutVAT + departures;
-        estimateWithoutVAT = totalAmountDepartures;
-
         final Locale russianLocale = new Locale.Builder().setLanguage("ru").build();
         final Date dateBegin = new Date();
         Date dateEnd = taskFilter.getEndDate();
@@ -153,25 +146,35 @@ public class ReportCreator {
 
         /*строки с суммами*/
 
+        /* всего по смете без НДС */
+        final double amountReports = getTotalAmount(reportElements);
+
+        /* НДС = (всего по смете без НДС + Всего выездов на сумму без НДС) * 0.18 */
+        final double vat = (amountReports + totalAmountDepartures) * 0.18;
+
+        /* Всего по смете с НДС  =  всего по смете без НДС + Всего выездов на сумму без НДС + НДС*/
+        final double estimateWithVAT = amountReports + totalAmountDepartures + vat;
+
         final Cell cellEstimateAmount = addCellType(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     CellType.NUMERIC);
-
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
                                                     ConstantsOfReport.ROW_FOR_AMOUNT_NOT_VAT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellEstimateAmount.setCellValue(decimalFormat.format(getAmountsOfEstimate(workAmountList, materialAmountList))
+        cellEstimateAmount.setCellValue(decimalFormat.format(amountReports)
                                         + ConstantsOfReport.RU_STRING);
 
+        /* Колонка "Всего выездов на сумму без НДС" */
         final Cell cellVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.NUMERIC);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT,
                                                     ConstantsOfReport.ROW_FOR_VAT,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_HEADER,
                                                     ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-        cellVAT.setCellValue(decimalFormat.format(vat) + ConstantsOfReport.RU_STRING);
+        cellVAT.setCellValue(decimalFormat.format(totalAmountDepartures) + ConstantsOfReport.RU_STRING);
 
+        /* Колонка "Всего по смете с НДС" */
         final Cell cellEstimateWithVAT = addCellType(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
                 ConstantsOfReport.CELL_NUM_AMOUNT_HEADER, CellType.STRING);
         sheet.addMergedRegion((new CellRangeAddress(ConstantsOfReport.ROW_FOR_VAT_AMOUNT,
@@ -447,21 +450,29 @@ public class ReportCreator {
     }
 
     private void createOneTaskFromTemplate(Row row, Row tRow, ReportElement reportElement) {
-        final List<Task> mergedTasks = reportElement.getMergedTasks();
         Cell cellTask = row.createCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
         Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
         copyCell(tCell, cellTask);
 
-        String orderNumebrs = null;
-        String shopName = null;
+        String shopName = "";
+        final List<Task> mergedTasks = reportElement.getMergedTasks();
+        List<String> orderNumbers = new ArrayList<>();
         for (Task task : mergedTasks) {
             shopName = task.getShopName();
-            orderNumebrs = String.join(",", task.getOrderNumber());
+            String orderNumber = task.getOrderNumber();
+            if (orderNumber != null && orderNumber.length() != 0) {
+                orderNumbers.add(orderNumber);
+            }
         }
 
+        String joinOrderNum;
+
         final String noOrderNum = "б/н";
-        if (orderNumebrs.length() == 0) {
-            orderNumebrs = noOrderNum;
+
+        if (orderNumbers.isEmpty()) {
+            joinOrderNum = noOrderNum;
+        } else {
+            joinOrderNum = String.join(", ", orderNumbers);
         }
 
         final StringBuilder taskStrBuilder = new StringBuilder();
@@ -472,11 +483,10 @@ public class ReportCreator {
                       .append(cityName)
                       .append(");")
                       .append(" номера заявок: ")
-                      .append(orderNumebrs)
+                      .append(joinOrderNum)
                       .append(".");
 
         cellTask.setCellValue(String.valueOf(taskStrBuilder));
-
     }
 
     private int createWorks(ReportElement reportElement, int workRowPosition) {
