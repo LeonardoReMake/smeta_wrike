@@ -14,7 +14,7 @@ public class ReportElement {
 
     private City city;
 
-    private List<String> taskOrders = new ArrayList<>();
+    private List<Task> mergedTasks = new ArrayList<>();
 
     private List<Work> works = new ArrayList<>();
 
@@ -54,12 +54,12 @@ public class ReportElement {
         this.materials = materials;
     }
 
-    public List<String> getTaskOrders() {
-        return taskOrders;
+    public List<Task> getMergedTasks() {
+        return mergedTasks;
     }
 
-    public void setTaskOrders(List<String> taskOrders) {
-        this.taskOrders = taskOrders;
+    public void setMergedTasks(List<Task> mergedTasks) {
+        this.mergedTasks = mergedTasks;
     }
 
 }

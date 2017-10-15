@@ -18,15 +18,16 @@ public interface TaskFilterImplDAO extends Dao<Task, Long> {
             "where filter = :filter and " +
             "task.city = COALESCE(filterCity, task.city) and " +
             "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
-            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) " +
-            "order by task.createdDate desc")
+            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) and " +
+            "task.completedDate IS NOT NULL order by task.createdDate desc")
     List<Long> findTaskIdsByFilter(@Named("filter") TaskFilter taskFilter, @Offset int offset, @Limit int limit);
 
     @Finder(query = "select count(*) from Task task, TaskFilter filter left join filter.cities as filterCity " +
             "where filter = :filter and " +
             "task.city = COALESCE(filterCity, task.city) and " +
             "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
-            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date))")
+            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) and " +
+            "task.completedDate IS NOT NULL")
     Long countTasksByFilter(@Named("filter") TaskFilter taskFilter);
 
     @Finder(query = "select task from Task task, TaskFilter filter left join filter.cities as filterCity " +
@@ -44,8 +45,8 @@ public interface TaskFilterImplDAO extends Dao<Task, Long> {
             "where filter = :filter and " +
             "task.city = COALESCE(filterCity, task.city) and " +
             "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
-            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) " +
-            "group by task.shopName, task.city.id")
+            "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) and " +
+            "task.completedDate IS NOT NULL group by task.shopName, task.city.id")
     List<Object[]> findShopNameAndCity(@Named("filter") TaskFilter taskFilter);
 
     @Finder(query = "select task " +
@@ -56,10 +57,11 @@ public interface TaskFilterImplDAO extends Dao<Task, Long> {
             "task.city = COALESCE(filterCity, task.city) and " +
             "COALESCE(task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, task.completedDate, cast('2001-01-01' as date)) and " +
             "COALESCE(task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, task.completedDate, cast('2101-01-02' as date)) and " +
-            " task.shopName = :shopName and task.city.id = :cityId ")
-    List<String> findOrderNumberByShopName(@Named("filter") TaskFilter taskFilter,
-                                           @Named("shopName") String shopName,
-                                           @Named("cityId") Long id);
+            "task.completedDate IS NOT NULL and task.shopName = :shopName and task.city.id = :cityId order by task.completedDate")
+    List<Task> findOrderNumberByShopNameAndCity(@Named("filter") TaskFilter taskFilter,
+                                                @Named("shopName") String shopName,
+                                                @Named("cityId") Long cityId);
+
+
 
 }
-

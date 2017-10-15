@@ -79,8 +79,7 @@ public class WrikeLoaderServiceTest {
     @Test
     public void testDateReport() throws ParseException {
         final Date dateBegin = new SimpleDateFormat("yyyy-MM-dd").parse(String.valueOf(new Date()));
-        System.out.println(dateBegin
-        );
+        System.out.println(dateBegin);
     }
 
 }

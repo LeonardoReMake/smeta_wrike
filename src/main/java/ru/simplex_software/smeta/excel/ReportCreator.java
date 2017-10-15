@@ -1,23 +1,21 @@
 package ru.simplex_software.smeta.excel;
 
-import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFHyperlink;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.simplex_software.smeta.model.Element;
 import ru.simplex_software.smeta.model.Material;
 import ru.simplex_software.smeta.model.PriceDeparture;
+import ru.simplex_software.smeta.model.ReportElement;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.model.TaskFilter;
 import ru.simplex_software.smeta.model.Work;
@@ -45,8 +43,6 @@ public class ReportCreator {
 
     private static final String TEMPLATE_FOOTER_PATH = "template/footer_template.xlsx";
 
-    private static final double ONE_DEPARTURE = 600;
-
     private final DecimalFormat decimalFormat = new DecimalFormat("###,###.###");
 
     private final int[] onePartCells = {1, 2, 3, 4, 5};
@@ -65,13 +61,31 @@ public class ReportCreator {
 
     private int freeRowPosition = 0;
 
-    private int departures = 0;
-    
-    private double amountDepartures = 0;
+    private int dayDepartures = 0;
 
-    private double totalAmountDepartures = 0;
+    private int nightDepartures = 0;
+
+    private int departures = 0;
+
+    private int totalDayDepartures = 0;
+
+    private int totalNightDepartures = 0;
+
+    private double totalAmountDayDepOfReportElem = 0;
+
+    private double totalAmountNightDepOfReport = 0;
+
+    private double totalAmountDepOfReportElem = 0;
+
+    private  double totalAmountDepartures = 0;
+
+    private double totalAmountDayDepartures = 0;
+
+    private double totalAmountNightDepartures = 0;
 
     private double estimateWithoutVAT = 0;
+
+    private int totalDepartures = 0;
 
     public ReportCreator() {
         wb = new XSSFWorkbook();
@@ -79,13 +93,13 @@ public class ReportCreator {
         sheet.setDisplayGridlines(false);
     }
 
-    public void copyFromTemplateHeader(List<Task> taskList, TaskFilter taskFilter) throws InvalidFormatException, ParseException {
+    public void copyFromTemplateHeader(List<ReportElement> reportElements, TaskFilter taskFilter) throws InvalidFormatException, ParseException {
         template = getTemplateHeader();
         int numberNumber = 0;
         int numberOfReport = 0;
 
         final double simpleVAT = 0.18;
-        final double departures = getTotalAmount(taskList);
+        final double departures = getTotalAmount(reportElements);
         final double vat = (estimateWithoutVAT + departures) * simpleVAT;
 
         final double estimateWithVAT = vat + estimateWithoutVAT + departures;
@@ -167,97 +181,137 @@ public class ReportCreator {
         cellEstimateWithVAT.setCellValue(decimalFormat.format(estimateWithVAT));
     }
 
-    private double getTotalAmount(List<Task> tasks) {
+    private double getTotalAmount(List<ReportElement> reportElements) {
         double amounts = 0;
-        for (Task task : tasks) {
-            if (task.getAmount() != null)
-                amounts += task.getAmount();
+        for (ReportElement reportElement : reportElements) {
+            List<Task> tasks = reportElement.getMergedTasks();
+            for (Task task : tasks) {
+                if (task.getAmount() != null)
+                    amounts += task.getAmount();
+            }
         }
         return amounts;
     }
 
     /* Создание списков заданий. */
-    public void copyFromTemplateTask(List<Task> tasks, List<PriceDeparture> priceDepartures) throws InvalidFormatException, ParseException {
+    public void copyFromTemplateTask(List<ReportElement> reportElements, List<PriceDeparture> priceDepartures) throws InvalidFormatException, ParseException {
         template = getTemplateTasks();
         final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
         int workRowPosition;
         int materialRowPosition;
         freeRowPosition = 11;
 
-        for (Task task : tasks) {
-            if (task.isChecked()) {
-                double worksAmount = getAmount(task.getWorks());
-                double materialsAmount = getAmount(task.getMaterials());
+        for (ReportElement reportElement : reportElements) {
+            final List<Task> taskList = reportElement.getMergedTasks();
+            double worksAmount = getAmount(reportElement.getWorks());
+            double materialsAmount = getAmount(reportElement.getMaterials());
 
-                Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
-                Row row = sheet.createRow(freeRowPosition);
-                workAmountList.add(worksAmount);
-                materialAmountList.add(materialsAmount);
+            Row tRow = tSheet.getRow(ConstantsOfReport.INDEX_SHEET);
+            Row row = sheet.createRow(freeRowPosition);
+            workAmountList.add(worksAmount);
+            materialAmountList.add(materialsAmount);
 
-                sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
-                        ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
-                        ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
-                createOneTaskFromTemplate(row, tRow, task);
-                workRowPosition = freeRowPosition;
-                materialRowPosition = freeRowPosition;
+            sheet.addMergedRegion((new CellRangeAddress(freeRowPosition, freeRowPosition,
+                                                        ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK,
+                                                        ConstantsOfReport.CELL_NUM_LAST_FOR_TASK)));
 
-                int newWorkRowPosition = createWorks(task, workRowPosition);
-                workRowPosition = newWorkRowPosition + 1;
+            createOneTaskFromTemplate(row, tRow, reportElement);
+            workRowPosition = freeRowPosition;
+            materialRowPosition = freeRowPosition;
 
-                int newMaterialRowPosition = createMaterials(task, materialRowPosition, workRowPosition);
-                materialRowPosition = newMaterialRowPosition + 1;
+            workRowPosition = createWork(reportElement, workRowPosition);
+            materialRowPosition = createMaterial(reportElement, materialRowPosition, workRowPosition);
 
-                if (matchingRowPosition(workRowPosition, materialRowPosition)) {
-                    while (workRowPosition < materialRowPosition) {
-                        row = sheet.getRow(workRowPosition);
-                        createTaskCells(onePartCells, null, row);
-                        workRowPosition++;
-                    }
-                } else {
-                    while (materialRowPosition < workRowPosition) {
-                        row = sheet.getRow(materialRowPosition);
-                        createTaskCells(twoPartCells, null, row);
-                        materialRowPosition++;
-                    }
+            if (matchingRowPosition(workRowPosition, materialRowPosition)) {
+                while (workRowPosition < materialRowPosition) {
+                    row = sheet.getRow(workRowPosition);
+                    createTaskCells(onePartCells, null, row);
+                    workRowPosition++;
                 }
-
-                double dayPriceDep = 600;
-                double nightPriceDep = 1200;
-                double urgentPriceDep = 1800;
-
-                PriceDeparture priceDeparture = new PriceDeparture();
-                priceDeparture.setDayTimePrice(dayPriceDep);
-                priceDeparture.setNightlyTimePrice(nightPriceDep);
-                priceDeparture.setUrgentTimePrice(urgentPriceDep);
-
-                if (!priceDepartures.isEmpty()) {
-                    priceDeparture = priceDepartures.get(0);
-                    dayPriceDep = priceDeparture.getDayTimePrice();
-                    nightPriceDep = priceDeparture.getNightlyTimePrice();
-                    urgentPriceDep = priceDeparture.getUrgentTimePrice();
+            } else {
+                while (materialRowPosition < workRowPosition) {
+                    row = sheet.getRow(materialRowPosition);
+                    createTaskCells(twoPartCells, null, row);
+                    materialRowPosition++;
                 }
-
-                final LocalDateTime completedDate = task.getCompletedDate();
-
-                int morning = 6;
-                int evening = 20;
-                if (completedDate != null) {
-                    if (completedDate.getHour() <= morning || completedDate.getHour() >= evening) {
-                        amountDepartures = nightPriceDep * departures;
-                    } else {
-                        amountDepartures = dayPriceDep * departures;
-                    }
-                }
-
-                totalAmountDepartures += amountDepartures;
-
-                freeRowPosition = createAmountForWorks(workRowPosition, tSheet, worksAmount);
-                createAmountForMaterials(materialRowPosition, tSheet, materialsAmount, tasks, priceDeparture);
             }
+
+            PriceDeparture priceDeparture = priceDepartures.get(0);
+
+            totalAmountDepOfReportElem = 0;
+            totalAmountDayDepOfReportElem = 0;
+            totalAmountNightDepOfReport = 0;
+
+            dayDepartures = 0;
+            nightDepartures = 0;
+            departures = 0;
+            setDateByDepartures(taskList, priceDeparture.getDayTimePrice(), priceDeparture.getNightlyTimePrice());
+            freeRowPosition = createAmountForWorks(workRowPosition, tSheet, worksAmount);
+            createAmountForMaterials(materialRowPosition, tSheet, materialsAmount);
         }
     }
 
-    public void copyFromTemplateFooter(List<Task> tasks) throws InvalidFormatException {
+    private void setDateByDepartures(List<Task> taskList, double dayPriceDep, double nightPriceDep) {
+        LocalDateTime startCompletedDate = taskList.get(0).getCompletedDate();
+        for (Task task : taskList) {;
+            final List<Work> workList = task.getWorks();
+            final List<Material> materialList = task.getMaterials();
+            if (!workList.isEmpty() || !materialList.isEmpty()) {
+                final LocalDateTime completedDate = task.getCompletedDate();
+                if (isNightDeparture(startCompletedDate)) {
+                    if (startCompletedDate.isBefore(completedDate.minusHours(10))) {
+                        nightDepartures++;
+                        startCompletedDate = completedDate;
+                    }
+                } else {
+                    if (startCompletedDate.isBefore(completedDate.minusHours(10))) {
+                        dayDepartures++;
+                        startCompletedDate = completedDate;
+                    }
+                }
+            }
+        }
+        if (isNightDeparture(startCompletedDate))
+            nightDepartures++;
+        else
+            dayDepartures++;
+
+        departures = dayDepartures + nightDepartures;
+
+        totalAmountDayDepOfReportElem = dayDepartures * dayPriceDep;
+        totalAmountNightDepOfReport = nightDepartures * nightPriceDep;
+        totalAmountDepOfReportElem = totalAmountDayDepOfReportElem + totalAmountNightDepOfReport;
+
+        totalDayDepartures += dayDepartures;
+        totalNightDepartures += nightDepartures;
+        totalDepartures += departures;
+
+        totalAmountDayDepartures += totalAmountDayDepOfReportElem;
+        totalAmountNightDepartures += totalAmountNightDepOfReport;
+        totalAmountDepartures = totalAmountDayDepartures + totalAmountNightDepartures;
+    }
+
+    private boolean isNightDeparture(LocalDateTime completedDate) {
+        final int morning = 6;
+        final int evening = 20;
+        if ((completedDate.getHour() < morning || completedDate.getHour() >= evening)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int createWork(ReportElement reportElement, int workRowPosition) {
+        int newWorkRowPosition = createWorks(reportElement, workRowPosition);
+        return newWorkRowPosition + 1;
+    }
+
+    private int createMaterial(ReportElement reportElement, int materialRowPosition, int workRowPosition) {
+        int newMaterialPosition = createMaterials(reportElement, materialRowPosition, workRowPosition);
+        return newMaterialPosition + 1;
+    }
+
+    public void copyFromTemplateFooter() throws InvalidFormatException {
         final int rowPositionOfEstimate = 4;
         final int rowPosOfEstimateWithDep = 5;
         final int maxRowPositionOfFooter = 16;
@@ -283,17 +337,16 @@ public class ReportCreator {
                                                          CellType.NUMERIC);
         cellAmountOfMaterials.setCellValue(decimalFormat.format(amountMaterials));
 
-        int totalDep = (int) (totalAmountDepartures / ONE_DEPARTURE);
-
         final Cell cellTotalDep = addCellType(row.getRowNum() + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK,
                                               ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
                                                       CellType.NUMERIC);
-        cellTotalDep.setCellValue( totalDep + " (" + totalDep + "/0)");
+        cellTotalDep.setCellValue( totalDepartures + " (" + totalDayDepartures + "/" + totalNightDepartures + ")");
 
         final Cell cellAmountTotalDep = addCellType(row.getRowNum() + 2,
                                                     ConstantsOfReport.CELL_NUM_AMOUNT_FOR_MATERIAL_OR_ESTIMATE + 1,
                                                             CellType.NUMERIC);
-        cellAmountTotalDep.setCellValue(decimalFormat.format(totalAmountDepartures));
+        cellAmountTotalDep.setCellValue(decimalFormat.format(totalAmountDepartures) + "("
+                                        + totalAmountDayDepartures + "/" + totalAmountNightDepartures + ")");
 
         double amountOfEstimate = amountMaterials + amountWorks;
 
@@ -363,37 +416,25 @@ public class ReportCreator {
         return workRowPosition;
     }
 
-    private void setOneDeparture(List<Task> taskList, PriceDeparture priceDeparture) throws ParseException {
-        departures = 0;
-
-        for (Task newTask : taskList) {
-            if (newTask.isDeparture()) {
-                departures = 1;
-            }
-        }
-    }
-
     /**
      * Добавляется сумма материалов...
      * @param materialRowPosition
      * @param tSheet
      * @param materialsAmount
-     * @param taskList
      */
     private void createAmountForMaterials(int materialRowPosition, Sheet tSheet,
-                                          double materialsAmount, List<Task> taskList, PriceDeparture priceDeparture) throws ParseException {
+                                          double materialsAmount) throws ParseException {
         final int cellStart = 6;
         final int cellEnd = 11;
         final int numericCell = 10;
 
-        setOneDeparture(taskList, priceDeparture);
-
-        final String stateDepartures = " ( " + departures + "/0)";
-        final String stateAmountDepartures = " (" + amountDepartures + ",00/0,00)";
+        final String stateDepartures = " ( " + dayDepartures + "/" + nightDepartures + ")";
+        final String stateAmountDepartures = " (" + totalAmountDayDepOfReportElem + ",00/"
+                                                  + totalAmountNightDepOfReport + "0,00)";
 
         final String[] totals = { decimalFormat.format(materialsAmount),
                                   departures + stateDepartures,
-                                  amountDepartures + stateAmountDepartures };
+                                  totalAmountDepOfReportElem + stateAmountDepartures };
 
         for (int i = ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK;
                 i < ConstantsOfReport.ROW_POSITION_AMOUNT_FOR_WORK + 3; i++) {
@@ -405,19 +446,41 @@ public class ReportCreator {
         }
     }
 
-    private void createOneTaskFromTemplate(Row row, Row tRow, Task task) {
+    private void createOneTaskFromTemplate(Row row, Row tRow, ReportElement reportElement) {
+        final List<Task> mergedTasks = reportElement.getMergedTasks();
         Cell cellTask = row.createCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
         Cell tCell = tRow.getCell(ConstantsOfReport.CELL_NUM_FIRST_FOR_TASK);
-        CreationHelper createHelper = wb.getCreationHelper();
-        XSSFHyperlink linkWrike = (XSSFHyperlink) createHelper.createHyperlink(HyperlinkType.URL);
         copyCell(tCell, cellTask);
-        linkWrike.setAddress(task.getWrikeLink());
-        cellTask.setHyperlink(linkWrike);
-        cellTask.setCellValue(task.getName());
+
+        String orderNumebrs = null;
+        String shopName = null;
+        for (Task task : mergedTasks) {
+            shopName = task.getShopName();
+            orderNumebrs = String.join(",", task.getOrderNumber());
+        }
+
+        final String noOrderNum = "б/н";
+        if (orderNumebrs.length() == 0) {
+            orderNumebrs = noOrderNum;
+        }
+
+        final StringBuilder taskStrBuilder = new StringBuilder();
+        String cityName = reportElement.getCity().getName();
+
+        taskStrBuilder.append(shopName)
+                      .append("(")
+                      .append(cityName)
+                      .append(");")
+                      .append(" номера заявок: ")
+                      .append(orderNumebrs)
+                      .append(".");
+
+        cellTask.setCellValue(String.valueOf(taskStrBuilder));
+
     }
 
-    private int createWorks(Task task, int workRowPosition) {
-        for (Work work : task.getWorks()) {
+    private int createWorks(ReportElement reportElement, int workRowPosition) {
+        for (Work work : reportElement.getWorks()) {
             double workAmount = work.getAmount();
             final Row row = sheet.createRow(workRowPosition + ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK);
             final String[] names = { work.getName(), work.getUnits(),
@@ -441,8 +504,8 @@ public class ReportCreator {
         }
     }
 
-    private int createMaterials(Task task, int materialRowPosition, int workRowPosition) {
-        for (Material material : task.getMaterials()) {
+    private int createMaterials(ReportElement reportElement, int materialRowPosition, int workRowPosition) {
+        for (Material material : reportElement.getMaterials()) {
             double materialAmount = material.getAmount();
             Row row;
             if (materialRowPosition > workRowPosition) {
@@ -513,30 +576,13 @@ public class ReportCreator {
     }
 
     private void createTaskElementCell(int i, String value, Row row) {
-        final int workBeginI = 2;
-        final int workEndI = 6;
-        final int materialBeginI = 7;
-        final int materialEndI = 11;
-
         if (row != null) {
             final Cell cell = row.createCell(i);
             final Sheet tSheet = template.getSheetAt(ConstantsOfReport.INDEX_SHEET);
             final Cell tCell = tSheet.getRow(ConstantsOfReport.ROW_NUM_FIRST_FOR_TASK).getCell(i);
             copyCell(tCell, cell);
-            if ( value != null && (checkNumericFormatForElement(i,workBeginI, workEndI) ||
-                                   checkNumericFormatForElement(i, materialBeginI, materialEndI))) {
-                CellStyle cellStyle = wb.createCellStyle();
-                cellStyle.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("#.#"));
-                cell.setCellStyle(cellStyle);
-                cell.setCellValue(value);
-            } else {
-                cell.setCellValue(value);
-            }
+            cell.setCellValue(value);
         }
-    }
-
-    private boolean checkNumericFormatForElement(int columnI, int elementBeginI, int elementEndI) {
-        return ((columnI > elementBeginI && columnI < elementEndI));
     }
 
     private Cell addCellType(int rowNum, int cellNum, CellType cellType) {

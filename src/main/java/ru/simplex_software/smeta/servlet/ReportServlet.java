@@ -1,5 +1,6 @@
 package ru.simplex_software.smeta.servlet;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -65,23 +67,38 @@ public class ReportServlet implements HttpRequestHandler {
 
         ServletOutputStream outputStream = response.getOutputStream();
 
-            TaskFilter filter = taskFilterDAO.findAllFilters().get(0);
-            final List<Task> taskFilterList = taskFilterImplDAO.findTasksByFilter(filter);
+        TaskFilter filter = taskFilterDAO.findAllFilters().get(0);
+        List<ReportElement> reportElements = removeEmptyReportElement(getReportElements(filter));
 
-            final List<ReportElement> reportElements = getReportElements(filter);
+        try {
+            setDeparture(reportElements);
+            reportCreator.copyFromTemplateTask(reportElements, priceDepartureDAO.findAllDepartures());
+            reportCreator.copyFromTemplateHeader(reportElements, filter);
+            reportCreator.copyFromTemplateFooter();
+            reportCreator.write(outputStream);
+        } catch (InvalidFormatException e) {
+            LOG.error(e.getMessage());
+        } catch (ParseException e) {
+            LOG.error(e.getMessage());
+        }
 
-            /*
-            *
-            * вызов методов для добавления контента в отчет.
-            *
-            * */
+    }
 
+    private List<ReportElement> removeEmptyReportElement(List<ReportElement> reportElements) {
+        List<ReportElement> removeReportElements = new ArrayList<>();
+        for (ReportElement reportElement : reportElements) {
+            if (reportElement.getWorks().isEmpty() && reportElement.getMaterials().isEmpty()) {
+                removeReportElements.add(reportElement);
+            }
+        }
+        reportElements.removeAll(removeReportElements);
+        return reportElements;
     }
 
     private List<ReportElement> getReportElements(TaskFilter filter) {
         final List<ReportElement> reportElements = new ArrayList<>();
 
-        List<Object[]> shopNameAndCityList = taskFilterImplDAO.findShopNameAndCity(filter);
+        final List<Object[]> shopNameAndCityList = taskFilterImplDAO.findShopNameAndCity(filter);
         for (Object[] tObjects : shopNameAndCityList) {
             final ReportElement reportElement = new ReportElement();
 
@@ -92,25 +109,29 @@ public class ReportServlet implements HttpRequestHandler {
             City city = cityDAO.findCityByID(cityID);
             reportElement.setCity(city);
 
-            final List<String> orderNumbers =
-                    taskFilterImplDAO.findOrderNumberByShopName(filter, shopName, cityID);
-            reportElement.setTaskOrders(orderNumbers);
+            final List<Task> mergedTasks =
+                    taskFilterImplDAO.findOrderNumberByShopNameAndCity(filter, shopName, cityID);
+            reportElement.setMergedTasks(mergedTasks);
+            LOG.info(String.valueOf(reportElement.getMergedTasks()));
 
             final List<Work>  works = workDAO.findWorkByShopName(shopName, cityID);
-            LOG.debug(String.valueOf(works.size()));
-            addNewElements(works, reportElement, true);
+            addElements(works, reportElement, true);
 
             final List<Material>  materials = materialDAO.findMaterialByShopName(shopName, cityID);
-            LOG.debug(String.valueOf(materials.size()));
-            addNewElements(materials, reportElement, false);
+            addElements(materials, reportElement, false);
 
             reportElements.add(reportElement);
         }
         return reportElements;
     }
 
+    private void addElements(List<? extends Element> elements, ReportElement reportElement, boolean checkElem) {
+        LOG.debug(String.valueOf(elements.size()));
+        addNewElements(elements, reportElement, checkElem);
+    }
+
     private void addNewElements(List<? extends Element> inElements,
-                                         ReportElement reportElement, boolean checkElem) {
+                                ReportElement reportElement, boolean checkElem) {
         for (Element elem : inElements) {
             Element element;
             if (checkElem) {
@@ -132,22 +153,35 @@ public class ReportServlet implements HttpRequestHandler {
         return newElement;
     }
 
-    private void setDeparture(List<Task> taskFilterList) {
-        Task t;
-        t = taskFilterList.get(0);
-        t.setDeparture(true);
-        if (t.getCompletedDate() != null) {
-            LocalDateTime toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
-            for (Task task : taskFilterList.subList(1, taskFilterList.size())) {
-                final LocalDateTime taskCDT = task.getCompletedDate();
-                if (taskCDT != null) {
-                    if (taskCDT.isAfter(toDate)) {
-                        t = task; t.setDeparture(true);
-                        toDate = t.getCompletedDate().plus(10, ChronoUnit.HOURS);
-                    }
-                }
+    private void setDeparture(List<ReportElement> reportElements) {
+        for (ReportElement reportElement : reportElements) {
+            final List<Task> taskList = reportElement.getMergedTasks();
+            Task beginTask = taskList.get(0);
+            beginTask.setDeparture(true);
+            if (beginTask.getCompletedDate() != null) {
+                addDepartureByList(taskList, beginTask);
             }
         }
+    }
+
+    private void addDepartureByList(List<Task> taskList, Task beginTask) {
+        LocalDateTime toDate = beginTask.getCompletedDate().plus(10, ChronoUnit.HOURS);
+        for (Task innerTask : taskList.subList(1, taskList.size())) {
+            final LocalDateTime taskCDT = innerTask.getCompletedDate();
+            toDate = addDepartureByDateTime(taskCDT, toDate, innerTask);
+        }
+    }
+
+    private LocalDateTime addDepartureByDateTime(LocalDateTime taskCDT, LocalDateTime toDate, Task innerTask) {
+        if (taskCDT != null) {
+            Task newTask;
+            if (taskCDT.isAfter(toDate)) {
+                newTask = innerTask;
+                newTask.setDeparture(true);
+                toDate = newTask.getCompletedDate().plus(10, ChronoUnit.HOURS);
+            }
+        }
+        return toDate;
     }
 
 }
