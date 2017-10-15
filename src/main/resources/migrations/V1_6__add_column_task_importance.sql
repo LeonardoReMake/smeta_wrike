@@ -1,0 +1,1 @@
+ALTER TABLE task ADD COLUMN importance character varying(256);

@@ -85,6 +85,9 @@ public class Task extends LongIdPersistentEntity {
     @Transient
     private boolean departure;
 
+    /** Важность задачи: High, Normal, Low. **/
+    private String importance;
+
     public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
         this.name = name;
@@ -227,4 +230,11 @@ public class Task extends LongIdPersistentEntity {
         this.checked = checked;
     }
 
+    public String getImportance() {
+        return importance;
+    }
+
+    public void setImportance(String importance) {
+        this.importance = importance;
+    }
 }
