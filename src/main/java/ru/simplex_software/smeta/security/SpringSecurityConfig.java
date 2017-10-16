@@ -30,7 +30,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/", "/login").permitAll()
+                .antMatchers("/", "/login","/ihc-verification.html").permitAll()
                 .antMatchers("/**").authenticated()
                 .and().addFilterBefore(oAuth2ClientAuthenticationProcessingFilter, BasicAuthenticationFilter.class)
                 .httpBasic().authenticationEntryPoint(aep);

@@ -1,0 +1,5 @@
+ALTER TABLE task ADD COLUMN checked BOOLEAN;
+
+UPDATE task SET checked = TRUE WHERE checked IS NULL;
+
+ALTER TABLE task ALTER COLUMN checked SET NOT NULL;
