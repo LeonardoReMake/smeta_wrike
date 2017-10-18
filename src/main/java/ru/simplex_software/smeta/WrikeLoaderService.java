@@ -35,9 +35,15 @@ public class WrikeLoaderService {
         ImportInfo importInfo = new ImportInfo();
         List<Task> taskInDb = taskDAO.findAllTasks();
 
-        LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
-        LOG.info("Last updated task date: "+lastCreationDate);
-        List<Task> newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.minusMonths(2));
+        List<Task> newTasks;
+        if (taskInDb.size() != 0) {
+            LocalDateTime lastCreationDate = taskInDb.get(0).getCreatedDate();
+            LOG.info("Last updated task date: " + lastCreationDate);
+            newTasks = wrikeTaskDAO.findTasksStartDate(lastCreationDate.minusMonths(2));
+        } else {
+            LOG.info("Load all tasks");
+            newTasks = wrikeTaskDAO.findTasks();
+        }
 
         if (newTasks.size() != 0) {
             LOG.info("find "+newTasks.size()+" in last 2 months");
