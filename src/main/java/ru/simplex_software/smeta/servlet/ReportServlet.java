@@ -72,7 +72,7 @@ public class ReportServlet implements HttpRequestHandler {
 
         try {
             setDeparture(reportElements);
-            reportCreator.copyFromTemplateTask(reportElements, priceDepartureDAO.findAllDepartures());
+            reportCreator.copyFromTemplateTask(reportElements, priceDepartureDAO.findDeparture());
             reportCreator.copyFromTemplateHeader(reportElements, filter);
             reportCreator.copyFromTemplateFooter();
             reportCreator.write(outputStream);

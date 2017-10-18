@@ -11,35 +11,35 @@ public class PriceDeparture extends LongIdPersistentEntity {
 
     private static Logger LOG = LoggerFactory.getLogger(PriceDeparture.class);
 
-    private Double dayTimePrice;
+    private double dayTimePrice;
 
-    private Double urgentTimePrice;
+    private double urgentTimePrice;
 
-    private Double nightlyTimePrice;
+    private double nightlyTimePrice;
 
     public PriceDeparture() { }
 
-    public Double getDayTimePrice() {
+    public double getDayTimePrice() {
         return dayTimePrice;
     }
 
-    public void setDayTimePrice(Double dayTimePrice) {
+    public void setDayTimePrice(double dayTimePrice) {
         this.dayTimePrice = dayTimePrice;
     }
 
-    public Double getUrgentTimePrice() {
+    public double getUrgentTimePrice() {
         return urgentTimePrice;
     }
 
-    public void setUrgentTimePrice(Double urgentTimePrice) {
+    public void setUrgentTimePrice(double urgentTimePrice) {
         this.urgentTimePrice = urgentTimePrice;
     }
 
-    public Double getNightlyTimePrice() {
+    public double getNightlyTimePrice() {
         return nightlyTimePrice;
     }
 
-    public void setNightlyTimePrice(Double nightlyTimePrice) {
+    public void setNightlyTimePrice(double nightlyTimePrice) {
         this.nightlyTimePrice = nightlyTimePrice;
     }
 }

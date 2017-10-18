@@ -1,5 +1,5 @@
-ALTER TABLE task ADD COLUMN checked BOOLEAN;
-
 UPDATE task SET checked = TRUE WHERE checked IS NULL;
 
 ALTER TABLE task ALTER COLUMN checked SET NOT NULL;
+
+INSERT INTO pricedeparture VALUES (1, 600, 1200, 1800);

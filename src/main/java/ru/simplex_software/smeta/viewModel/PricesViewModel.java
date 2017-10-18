@@ -28,7 +28,7 @@ public class PricesViewModel {
 
     @Init
     public void init() {
-        addOrGetPriceDeparture();
+        priceDeparture = priceDepartureDAO.findDeparture();
     }
 
     @Command
@@ -49,14 +49,6 @@ public class PricesViewModel {
 
     public void setPriceDeparture(PriceDeparture priceDeparture) {
         this.priceDeparture = priceDeparture;
-    }
-
-    private void addOrGetPriceDeparture() {
-        if (priceDepartureDAO.findAllDepartures().isEmpty()) {
-            priceDeparture = new PriceDeparture();
-        } else {
-            priceDeparture = priceDepartureDAO.findAllDepartures().get(0);
-        }
     }
 
 }
