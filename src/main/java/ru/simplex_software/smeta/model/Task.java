@@ -206,6 +206,10 @@ public class Task extends LongIdPersistentEntity {
         this.filled = filled;
     }
 
+    public boolean getFilled() {
+        return filled;
+    }
+
     public LocalDateTime getCompletedDate() {
         return completedDate;
     }

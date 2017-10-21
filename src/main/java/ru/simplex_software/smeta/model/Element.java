@@ -19,18 +19,18 @@ public class Element extends LongIdPersistentEntity {
     private String units;
 
     /** Кол-во. **/
-    private Double quantity;
+    private double quantity;
 
     /** Цена за единицу. **/
-    private Double unitPrice;
+    private double unitPrice;
 
     /** Сумма. **/
-    private Double amount;
+    private double amount;
 
     @ManyToOne
     private Task task;
 
-    public Element(String name, String units, Double quantity, Double unitPrice, Double amount) {
+    public Element(String name, String units, double quantity, double unitPrice, double amount) {
         this.name = name;
         this.units = units;
         this.quantity = quantity;
@@ -56,28 +56,27 @@ public class Element extends LongIdPersistentEntity {
         this.units = units;
     }
 
-    public Double getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 
-    public Double getUnitPrice() {
+    public double getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(Double unitPrice) {
+    public void setUnitPrice(double unitPrice) {
         this.unitPrice = unitPrice;
     }
 
-    public Double getAmount() {
-        return amount == null ? 0 : amount;
+    public double getAmount() {
+        return amount;
     }
 
-    public void setAmount(Double amount) {
-        amount = unitPrice * quantity;
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 

@@ -189,7 +189,7 @@ public class WorkAndMaterialViewModel {
         List<Work> workList = workDAO.findByTask(task);
         taskWorkListModel = new ListModelList<>(workList);
 
-        List<Material> materialList = materialDAO.findByTasks(task);
+        List<Material> materialList = materialDAO.findByTask(task);
         taskMaterialListModel = new ListModelList<>(materialList);
 
         List<Template> templateList = templateDAO.findAllTemplates();
@@ -383,9 +383,7 @@ public class WorkAndMaterialViewModel {
     }
 
     private void countAmount(Element element) {
-        if (element.getQuantity() != null && element.getUnitPrice() != null) {
-            element.setAmount(element.getQuantity() * element.getUnitPrice());
-        }
+        element.setAmount(element.getQuantity() * element.getUnitPrice());
     }
 
     private void updateAmount(Work work) {
