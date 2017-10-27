@@ -99,26 +99,28 @@ public class ReportServlet implements HttpRequestHandler {
         final List<ReportElement> reportElements = new ArrayList<>();
 
         final List<Object[]> shopNameAndCityList = taskFilterImplDAO.findShopNameAndCity(filter);
-        for (Object[] tObjects : shopNameAndCityList) {
+        for (Object[] tObject : shopNameAndCityList) {
             final ReportElement reportElement = new ReportElement();
 
-            final String shopName = String.valueOf(tObjects[0]);
+            final String shopName = String.valueOf(tObject[0]);
             reportElement.setShopName(shopName);
 
-            final Long cityID = (Long) tObjects[1];
+            final Long cityID = (Long) tObject[1];
             City city = cityDAO.findCityByID(cityID);
             reportElement.setCity(city);
 
             final List<Task> mergedTasks =
                     taskFilterImplDAO.findOrderNumberByShopNameAndCity(filter, shopName, cityID);
+
             reportElement.setMergedTasks(mergedTasks);
             LOG.info(String.valueOf(reportElement.getMergedTasks()));
 
-            final List<Work>  works = workDAO.findWorkByShopName(shopName, cityID);
-            addElements(works, reportElement, true);
+            // слияние работ и материалов
+            List<Work> mergedWorks = workDAO.findWorkByShopName(filter, shopName, cityID);
+            addElements(mergedWorks, reportElement, true);
 
-            final List<Material>  materials = materialDAO.findMaterialByShopName(shopName, cityID);
-            addElements(materials, reportElement, false);
+            List<Material> mergedMaterials = materialDAO.findMaterialByShopName(filter, shopName, cityID);
+            addElements(mergedMaterials, reportElement, false);
 
             reportElements.add(reportElement);
         }
