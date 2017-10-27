@@ -10,8 +10,8 @@ import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -59,7 +59,7 @@ public class Task extends LongIdPersistentEntity {
     private LocalDateTime createdDate;
 
     /** Название города. **/
-    @OneToOne
+    @ManyToOne
     private City city;
 
     /** Номер заявки. Например: INC1343892. **/

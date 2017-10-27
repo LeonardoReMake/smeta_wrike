@@ -22,4 +22,8 @@ public interface CityDAO extends Dao<City, Long> {
 
     @Finder(query = "select city from City city where city.id = :id")
     City findCityByID(@Named("id") Long id);
+
+    @Finder(query = "select distinct city from City city, Task task where city = task.city")
+    List<City> findCityByEmptyTaskList();
+
 }
