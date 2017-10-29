@@ -3,8 +3,6 @@ package ru.simplex_software.smeta.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.simplex_software.zkutils.entity.LongIdPersistentEntity;
 
 import javax.persistence.CascadeType;
@@ -22,10 +20,9 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Task extends LongIdPersistentEntity {
 
-    private static Logger LOG = LoggerFactory.getLogger(Task.class);
-
     /** id, которое дает wrike каждой задаче. **/
     @NotNull
+    @Column(unique = true)
     private String wrikeId;
 
     /** Полное название задачи, указанное в wrike. **/
@@ -78,6 +75,10 @@ public class Task extends LongIdPersistentEntity {
     @Transient
     private List<String> parentIds;
 
+    /** Id супер папок в wrike. **/
+    @Transient
+    private List<String> superParentIds;
+
     /** Дата завершания задачи. **/
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime completedDate;
@@ -87,6 +88,17 @@ public class Task extends LongIdPersistentEntity {
 
     /** Важность задачи: High, Normal, Low. **/
     private String importance;
+
+    @OneToOne
+    private Manager manager;
+
+    public Manager getManager() {
+        return manager;
+    }
+
+    public void setManager(Manager manager) {
+        this.manager = manager;
+    }
 
     public Task(String wrikeId, String name, String shopName, Double amount, boolean filled) {
         this.wrikeId = wrikeId;
@@ -240,5 +252,13 @@ public class Task extends LongIdPersistentEntity {
 
     public void setImportance(String importance) {
         this.importance = importance;
+    }
+
+    public List<String> getSuperParentIds() {
+        return superParentIds;
+    }
+
+    public void setSuperParentIds(List<String> superParentIds) {
+        this.superParentIds = superParentIds;
     }
 }

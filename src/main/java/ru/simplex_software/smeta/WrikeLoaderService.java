@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.simplex_software.smeta.dao.CityDAO;
+import ru.simplex_software.smeta.dao.ManagerDAO;
 import ru.simplex_software.smeta.dao.TaskDAO;
 import ru.simplex_software.smeta.dao.WrikeTaskDaoImpl;
 import ru.simplex_software.smeta.model.City;
+import ru.simplex_software.smeta.model.Manager;
 import ru.simplex_software.smeta.model.Task;
 import ru.simplex_software.smeta.util.ImportInfo;
 
@@ -27,7 +29,12 @@ public class WrikeLoaderService {
     @Resource
     private CityDAO cityDAO;
 
+    @Resource
+    private ManagerDAO managerDAO;
+
     public ImportInfo loadNewTasks() {
+        int taskAmount = 0;
+
         ImportInfo importInfo = new ImportInfo();
         List<Task> taskInDb = taskDAO.findAllTasks();
 
@@ -42,12 +49,22 @@ public class WrikeLoaderService {
         }
 
         if (newTasks.size() != 0) {
-            LOG.info("find "+newTasks.size()+" in last 2 months");
-            importInfo.setImportedTaskCount(newTasks.size());
             int createdTasksCount = 0;
             int updatedTaskCount = 0;
+
             for (Task task : newTasks) {
-                task.setPath(wrikeTaskDAO.findPathForTask(task));
+                WrikeTaskDaoImpl.ManagerCity managerCity = wrikeTaskDAO.findManagerCityNameForTask(task);
+
+                if (managerCity == null) {
+                    continue;
+                }
+
+                String managerName = managerCity.manager;
+                String cityName = managerCity.city;
+
+                taskAmount++;
+                task.setManager(getManagerForName(managerName));
+                task.setCity(getCityForName(cityName));
                 String log = parseTaskTitle(task);
                 if (log.length() > 0) {
                     importInfo.addNotParsedTask(task, log);
@@ -63,16 +80,18 @@ public class WrikeLoaderService {
                     updatedTaskCount++;
                 }
             }
+
+            importInfo.setImportedTaskCount(taskAmount);
             LOG.info("Count of created tasks: "+createdTasksCount);
             LOG.info("Count of updated tasks: "+updatedTaskCount);
         } else {
             LOG.info("No new tasks");
         }
+
         return importInfo;
     }
 
     private String parseTaskTitle(Task task) {
-        StringBuilder log = new StringBuilder();
         String rawTitle = task.getName();
 
         String[] parts = rawTitle.split(" ");
@@ -83,13 +102,9 @@ public class WrikeLoaderService {
         }
 
         int index = 0;
-        String number = "";
 
         if (parts[index].contains(":")) {
-            number = parts[index].substring(0, parts[index].length()-1);
             index++;
-        } else {
-//            log.append("Невозможно выделить номер задачи. Отсутсвует ':' .\n");
         }
 
         String city = parts[index];
@@ -108,45 +123,49 @@ public class WrikeLoaderService {
 
         while (i < parts.length && !parts[i].startsWith("INC")) { i++; }
 
-        String system = "";
-        if (!isShop(parts[i-1])) {
-            system = parts[i-1];
-        }
-
         String id = "";
         if (i < parts.length && parts[i].startsWith("INC")) {
             id = parts[i];
-        } else {
-//            log.append("Невозможно выделить id заявки. Отсутствует 'INC'.\n");
-        }
-
-        List<City> cities = cityDAO.findCityForName(city);
-        City taskCity;
-        if (cities == null || cities.isEmpty()) {
-            log.append("Город ").append(city).append(" не найден в имеющемся списке городов. \n");
-            List<City> citiesForPath = cityDAO.findCityForName(task.getPath());
-            if (!citiesForPath.isEmpty()) {
-                log.append("Город задачи определен по папке wrike: ").append(citiesForPath.get(0).getName()).append(". ");
-                taskCity = citiesForPath.get(0);
-            } else {
-                taskCity = new City();
-                taskCity.setName(task.getPath());
-                cityDAO.create(taskCity);
-                log.append("Город ").append(task.getPath()).append(" добавлен в базу данных. \n");
-            }
-        } else {
-            taskCity = cities.get(0);
         }
 
         task.setShopName(shop.toString());
-        task.setCity(taskCity);
         task.setOrderNumber(id);
-        return log.toString();
+        return "";
     }
 
     private boolean isShop(String str) {
         return !(str.equals("OCS") || str.equals("BCS")
                 || str.equals("RCS") || str.equals("FO") || str.startsWith("INC"));
+    }
+
+    private Manager getManagerForName(String name) {
+        Manager manager = managerDAO.findMangerForName(name);
+        if (manager == null) {
+            LOG.info("Could not find manager with name {}", name);
+            LOG.info("Creating new manager with name {}", name);
+            manager = new Manager();
+            manager.setName(name);
+            managerDAO.create(manager);
+        }
+
+        return manager;
+    }
+
+    private City getCityForName(String cityName) {
+        List<City> cityList = cityDAO.findCityForName(cityName);
+        City city;
+
+        if (cityList == null || cityList.isEmpty()) {
+            LOG.info("Could not find city for name: {}", cityName);
+            LOG.info("Creating new city for name: {}", cityName);
+            city = new City();
+            city.setName(cityName);
+            cityDAO.create(city);
+        } else {
+            city = cityList.get(0);
+        }
+
+        return city;
     }
 
 }
