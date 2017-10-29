@@ -119,7 +119,7 @@ public class TaskViewModel {
         taskListModel = new TaskListModel(filter, taskDAO, taskFilterImplDAO);
         refreshList();
 
-        cities = cityDAO.findAll();
+        cities = cityDAO.findCityByEmptyTaskList();
     }
 
     @Command

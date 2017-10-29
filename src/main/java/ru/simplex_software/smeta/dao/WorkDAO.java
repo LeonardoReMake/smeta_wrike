@@ -24,13 +24,16 @@ public interface WorkDAO extends Dao<Work, Long>{
             "work.unitPrice, sum(work.amount)) from Work work, " +
             "TaskFilter filter left join filter.cities as filterCity " +
             "where filter = :filter and " +
-            "work.task.city = COALESCE(filterCity, work.task.city) and " +
-            "COALESCE(work.task.completedDate, filter.startDate, cast('2101-01-02' as date)) >= COALESCE(filter.startDate, work.task.completedDate, cast('2001-01-01' as date)) and " +
-            "COALESCE(work.task.completedDate, filter.endDate, cast('2001-01-01' as date)) <= COALESCE(filter.endDate, work.task.completedDate, cast('2101-01-02' as date)) and " +
+            "work.task.city = filterCity and " +
+            "work.task.completedDate >= filter.startDate and " +
+            "work.task.completedDate <= filter.endDate and " +
             "work.task.shopName = :shopName and " +
-            "work.task.city.id = :cityId " +
+            "work.task.city.id = :cityId and " +
+            "work.task.completedDate IS NOT NULL " +
             "group by work.name, work.units, work.unitPrice")
-    List<Work> findWorkByShopName(@Named("filter") TaskFilter filter, @Named("shopName") String shopName, @Named("cityId") long cityId);
+    List<Work> findWorkByShopName(@Named("filter") TaskFilter filter,
+                                  @Named("shopName") String shopName,
+                                  @Named("cityId") long cityId);
 
 }
 
