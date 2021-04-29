@@ -9,11 +9,6 @@
   <name>estimates</name>
   <description>Import tasks from wrike.com</description>
 
-  <organization>
-    <name>Симплекс Софтвер</name>
-    <url>http://www.simplex-software.ru</url>
-  </organization>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>4.3.10.RELEASE</spring.version>

@@ -72,3 +72,5 @@ buildNumber.properties
 
 src/profiles/development
 src/profiles/production
+/2017 06 Итоговая смета (1).xlsx
+/src/test/java/ru/simplex_software/WrikeApiTest.java

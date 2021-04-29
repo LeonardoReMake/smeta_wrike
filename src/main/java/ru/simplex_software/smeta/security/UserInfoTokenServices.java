@@ -112,6 +112,8 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
                 restTemplate.getOAuth2ClientContext().setAccessToken(token);
             }
 
+//            Map<String, String> uriParams = new HashMap<>();
+//            uriParams.put("access_token", accessToken);
             Map map = restTemplate.getForEntity(path, Map.class, new Object[0]).getBody();
             Map<String, Object> resultMap = new HashMap<>();
             for (Object entry : map.entrySet()) {
@@ -122,7 +124,7 @@ public class UserInfoTokenServices implements ResourceServerTokenServices {
             }
             return resultMap;
         } catch (Exception var6) {
-            LOG.warn("Could not fetch user details: " + var6.getClass() + ", " + var6.getMessage());
+                LOG.warn("Could not fetch user details: " + var6.getClass() + ", " + var6.getMessage());
             return Collections.singletonMap("error", "Could not fetch user details");
         }
     }
